@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 import { teamsRouter } from "./routes/teams-router";
 import { errorHandler } from "./middleware/error-handler";
 import { initDatabase } from "./database/sequelize";
+import { matchesRouter } from "./routes/matches-router";
+import "./models"; // This ensures associations are initialized
 
 dotenv.config();
 
@@ -13,6 +15,7 @@ app.use(express.json());
 
 // Routes
 app.use("/api", teamsRouter);
+app.use("/api", matchesRouter);
 
 // Error handling
 app.use(errorHandler);
