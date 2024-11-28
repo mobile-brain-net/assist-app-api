@@ -20,7 +20,6 @@ export async function fetchLeagueTeams(
     const saved = await dbService.saveLeagueTeams(fetchedData);
     res.json({
       message: "League teams fetched successfully",
-      teams: fetchedData,
       count: fetchedData.length,
       saved,
       success: true,
