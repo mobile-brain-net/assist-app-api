@@ -13,9 +13,7 @@ export class DatabaseService {
         founded: team.team.founded?.toString(),
         image: team.team.logo,
         // Optional fields that might come from your API:
-        short_hand: team.team.code,
-        continent: team.team.area?.continent,
-        flag_element: team.team.flag,
+
         season: team.season?.current,
         season_clean: team.season?.current?.toString(),
         url: team.team.website,
@@ -33,12 +31,9 @@ export class DatabaseService {
           "name",
           "clean_name",
           "english_name",
-          "short_hand",
           "country",
-          "continent",
           "founded",
           "image",
-          "flag_element",
           "season",
           "season_clean",
           "url",

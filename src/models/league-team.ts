@@ -6,12 +6,9 @@ export class LeagueTeam extends Model {
   public name!: string;
   public clean_name?: string;
   public english_name?: string;
-  public short_hand?: string;
   public country?: string;
-  public continent?: string;
   public founded?: string;
   public image?: string;
-  public flag_element?: string;
   public season?: string;
   public season_clean?: string;
   public url?: string;
@@ -38,12 +35,10 @@ LeagueTeam.init(
     },
     clean_name: DataTypes.STRING,
     english_name: DataTypes.STRING,
-    short_hand: DataTypes.STRING,
+
     country: DataTypes.STRING,
-    continent: DataTypes.STRING,
     founded: DataTypes.STRING,
     image: DataTypes.STRING,
-    flag_element: DataTypes.STRING,
     season: DataTypes.STRING,
     season_clean: DataTypes.STRING,
     url: DataTypes.STRING,

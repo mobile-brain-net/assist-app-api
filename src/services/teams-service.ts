@@ -20,7 +20,7 @@ export class TeamsService {
       team: {
         id: team.id,
         name: team.name,
-        code: team.short_hand,
+
         country: team.country,
         founded: parseInt(team.founded),
         logo: team.image,

@@ -6,9 +6,6 @@ export interface TeamResponse {
     country?: string;
     founded?: number;
     logo?: string;
-    area?: {
-      continent?: string;
-    };
     flag?: string;
     website?: string;
     full_name?: string;
