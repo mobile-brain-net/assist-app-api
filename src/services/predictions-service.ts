@@ -14,6 +14,7 @@ export class PredictionsService {
 
   async fetchPredictions(): Promise<any[]> {
     const getFixtures = new FixturesService();
+    //to do GET FIXTURES WHERE FIXTURES ID NOT IN PREDICTIONS
     const fixtures = await getFixtures.getFixtures();
     const predictions: any[] = [];
     if (fixtures.length === 0) {

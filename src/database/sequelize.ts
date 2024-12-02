@@ -1,5 +1,5 @@
 import { Sequelize } from "sequelize";
-
+import Prediction from "../models/predictions";
 const sequelize = new Sequelize({
   dialect: "mysql",
   host: process.env.DB_HOST || "127.0.0.1",
