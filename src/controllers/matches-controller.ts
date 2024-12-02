@@ -31,3 +31,13 @@ export async function fetchMatchData(
     next(err);
   }
 }
+
+export async function getMatchesForJson(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const matchesService = new MatchesService();
+  const matches = await matchesService.getMatchesForJson(req.query);
+  res.json(matches);
+}

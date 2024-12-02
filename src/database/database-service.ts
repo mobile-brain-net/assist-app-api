@@ -237,4 +237,32 @@ export class DatabaseService {
       }
     );
   }
+
+  async getFixtures(params: any): Promise<Fixture[]> {
+    //to do: add params where fixture_id not in predictions
+    return Fixture.findAll({
+      attributes: ["fixture_id"],
+    });
+  }
+
+  async getMatchesForJson(date: string, leagueName: string): Promise<any[]> {
+    if (!date || !leagueName) {
+      return [];
+    }
+    const teams = await LeagueTeam.findAll({
+      attributes: [
+        ["clean_name", "name"],
+        ["clean_name", "logo"],
+      ],
+      order: [["clean_name", "DESC"]],
+    });
+
+    return teams.map((team) => ({
+      uefa_euro_qualifiers_group: null,
+      uefa_euro_qualifiers_table: null,
+      uefa_euro_championship_group: null,
+      uefa_euro_championship_table: null,
+      ...team.toJSON(),
+    }));
+  }
 }

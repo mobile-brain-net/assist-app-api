@@ -22,4 +22,10 @@ export class MatchesService {
     await this.dbService.saveMatches(matches);
     return matches;
   }
+
+  async getMatchesForJson(params: any): Promise<Match[]> {
+    const { date, league_name } = params;
+
+    return this.dbService.getMatchesForJson(date, league_name);
+  }
 }

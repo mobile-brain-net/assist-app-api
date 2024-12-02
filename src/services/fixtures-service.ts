@@ -10,9 +10,8 @@ export class FixturesService {
     this.dbService = new DatabaseService();
   }
 
-  async getFixtures(params: any): Promise<Fixture[]> {
-    return [];
-    // return this.dbService.getFixtures(params);
+  async getFixtures(): Promise<Fixture[]> {
+    return this.dbService.getFixtures({});
   }
 
   async fetchAndSaveFixtures(): Promise<Fixture[]> {
