@@ -21,15 +21,15 @@ module.exports = {
         allowNull: true,
       },
       timestamp: {
-        type: DataTypes.DATE,
+        type: DataTypes.NUMBER,
         allowNull: true,
       },
       first_period_start: {
-        type: DataTypes.DATE,
+        type: DataTypes.NUMBER,
         allowNull: true,
       },
       second_period_start: {
-        type: DataTypes.DATE,
+        type: DataTypes.NUMBER,
         allowNull: true,
       },
       venue_id: {
@@ -46,11 +46,11 @@ module.exports = {
       },
       status_long: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       status_short: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       status_elapsed: {
         type: DataTypes.INTEGER,
@@ -58,11 +58,11 @@ module.exports = {
       },
       league_id: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
       },
       league_name: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       league_country: {
         type: DataTypes.STRING,

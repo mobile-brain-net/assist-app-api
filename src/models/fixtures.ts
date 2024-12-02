@@ -6,9 +6,9 @@ export class Fixture extends Model {
   public referee?: string;
   public timezone?: string;
   public fixture_date?: Date;
-  public timestamp?: Date;
-  public first_period_start?: Date;
-  public second_period_start?: Date;
+  public timestamp?: number;
+  public first_period_start?: number;
+  public second_period_start?: number;
   public venue_id?: number;
   public venue_name?: string;
   public venue_city?: string;
@@ -49,10 +49,12 @@ Fixture.init(
       primaryKey: true,
       allowNull: false,
     },
+    referee: DataTypes.STRING,
+    timezone: DataTypes.STRING,
     fixture_date: DataTypes.DATE,
-    timestamp: DataTypes.DATE,
-    first_period_start: DataTypes.DATE,
-    second_period_start: DataTypes.DATE,
+    timestamp: DataTypes.NUMBER,
+    first_period_start: DataTypes.NUMBER,
+    second_period_start: DataTypes.NUMBER,
     venue_id: DataTypes.INTEGER,
     venue_name: DataTypes.STRING,
     venue_city: DataTypes.STRING,

@@ -26,8 +26,9 @@ export class FixturesService {
       "x-rapidapi-key": process.env.V3_FOOTBALL_API_KEY,
     };
     const response = await axios.get(requestUrl, { headers });
-    const fixtures = response.data;
-    // await this.dbService.saveFixtures(fixtures);
+    const fixtures = response.data.response;
+
+    await this.dbService.saveFixtures(fixtures);
     return fixtures;
   }
 }

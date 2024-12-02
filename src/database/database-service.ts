@@ -4,6 +4,7 @@ import { Match } from "../models/match";
 import MatchStats from "../models/match-stats";
 import { MatchOdds } from "../models/match-odds";
 import sequelize from "../database/sequelize";
+import Fixture from "../models/fixtures";
 
 export class DatabaseService {
   async saveLeagueTeams(teams: TeamResponse[]): Promise<void> {
@@ -152,5 +153,88 @@ export class DatabaseService {
     } catch (error) {
       console.error("Error saving matches:", error);
     }
+  }
+
+  async saveFixtures(fixtures: any[]): Promise<void> {
+    await Fixture.bulkCreate(
+      fixtures.map((fixture) => ({
+        fixture_id: fixture.fixture?.id,
+        referee: fixture.fixture?.referee,
+        timezone: fixture.fixture?.timezone,
+        fixture_date: fixture.fixture?.date,
+        timestamp: fixture.fixture?.timestamp,
+        first_period_start: fixture.fixture?.periods?.first,
+        second_period_start: fixture.fixture?.periods?.second,
+        venue_id: fixture.fixture?.venue?.id,
+        venue_name: fixture.fixture?.venue?.name,
+        venue_city: fixture.fixture?.venue?.city,
+        status_long: fixture.fixture?.status?.long,
+        status_short: fixture.fixture?.status?.short,
+        status_elapsed: fixture.fixture?.status?.elapsed,
+        league_id: fixture.league?.id,
+        league_name: fixture.league?.name,
+        league_country: fixture.league?.country,
+        league_logo: fixture.league?.logo,
+        league_flag: fixture.league?.flag,
+        league_season: fixture.league?.season,
+        league_round: fixture.league?.round,
+        home_team_id: fixture.teams?.home?.id,
+        home_team_name: fixture.teams?.home?.name,
+        home_team_logo: fixture.teams?.home?.logo,
+        home_team_winner: fixture.teams?.home?.winner,
+        away_team_id: fixture.teams?.away?.id,
+        away_team_name: fixture.teams?.away?.name,
+        away_team_logo: fixture.teams?.away?.logo,
+        away_team_winner: fixture.teams?.away?.winner,
+        home_goals: fixture.goals?.home,
+        away_goals: fixture.goals?.away,
+        halftime_score_home: fixture.score?.halftime?.home,
+        halftime_score_away: fixture.score?.halftime?.away,
+        fulltime_score_home: fixture.score?.fulltime?.home,
+        fulltime_score_away: fixture.score?.fulltime?.away,
+        extra_time_score_home: fixture.score?.extratime?.home,
+        extra_time_score_away: fixture.score?.extratime?.away,
+        penalty_score_home: fixture.score?.penalty?.home,
+        penalty_score_away: fixture.score?.penalty?.away,
+      })),
+      {
+        updateOnDuplicate: [
+          "referee",
+          "timezone",
+          "fixture_date",
+          "timestamp",
+          "status_long",
+          "status_short",
+          "status_elapsed",
+          "home_goals",
+          "away_goals",
+          "halftime_score_home",
+          "halftime_score_away",
+          "fulltime_score_home",
+          "fulltime_score_away",
+          "home_team_id",
+          "away_team_id",
+          "home_team_name",
+          "home_team_logo",
+          "away_team_name",
+          "away_team_logo",
+          "extra_time_score_home",
+          "extra_time_score_away",
+          "penalty_score_home",
+          "penalty_score_away",
+          "first_period_start",
+          "second_period_start",
+          "home_team_winner",
+          "away_team_winner",
+          "league_id",
+          "league_name",
+          "league_country",
+          "league_logo",
+          "league_flag",
+          "league_season",
+          "league_round",
+        ],
+      }
+    );
   }
 }
