@@ -9,11 +9,11 @@ module.exports = {
       },
       predictions_winner_id: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: true,
       },
       predictions_winner_name: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       predictions_winner_comment: {
         type: Sequelize.STRING,
@@ -21,7 +21,7 @@ module.exports = {
       },
       predictions_win_or_draw: {
         type: Sequelize.BOOLEAN,
-        allowNull: false,
+        allowNull: true,
       },
       predictions_under_over: {
         type: Sequelize.STRING,
@@ -41,51 +41,51 @@ module.exports = {
       },
       predictions_percent_home: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       predictions_percent_draw: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       predictions_percent_away: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       league_id: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: true,
       },
       league_name: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       league_country: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       league_logo: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       league_flag: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       league_season: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: true,
       },
       home_team_id: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: true,
       },
       home_team_name: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       home_team_logo: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       home_last_5_form: {
         type: Sequelize.STRING,
@@ -97,96 +97,96 @@ module.exports = {
       },
       home_last_5_def: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       home_goals_for_total: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: true,
       },
       home_goals_against_total: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: true,
       },
       away_team_id: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: true,
       },
       away_team_name: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       away_team_logo: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       away_last_5_form: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       away_last_5_att: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       away_last_5_def: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       away_goals_for_total: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: true,
       },
       away_goals_against_total: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: true,
       },
       comparison_form_home: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       comparison_form_away: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       comparison_att_home: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       comparison_att_away: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       comparison_def_home: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       comparison_def_away: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       comparison_poisson_distribution_home: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       comparison_poisson_distribution_away: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       comparison_h2h_home: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       comparison_h2h_away: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       created_at: {
         type: Sequelize.DATE,
-        allowNull: false,
+        allowNull: true,
         defaultValue: Sequelize.NOW,
       },
       updated_at: {
         type: Sequelize.DATE,
-        allowNull: false,
+        allowNull: true,
         defaultValue: Sequelize.NOW,
       },
     });

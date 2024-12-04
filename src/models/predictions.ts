@@ -60,11 +60,11 @@ Prediction.init(
     },
     predictions_winner_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
     predictions_winner_name: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     predictions_winner_comment: {
       type: DataTypes.STRING,
@@ -72,7 +72,7 @@ Prediction.init(
     },
     predictions_win_or_draw: {
       type: DataTypes.BOOLEAN,
-      allowNull: false,
+      allowNull: true,
     },
     predictions_under_over: {
       type: DataTypes.STRING,
@@ -92,143 +92,143 @@ Prediction.init(
     },
     predictions_percent_home: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     predictions_percent_draw: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     predictions_percent_away: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     league_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
     league_name: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     league_country: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     league_logo: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     league_flag: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     league_season: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
     home_team_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
     home_team_name: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     home_team_logo: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     home_last_5_form: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     home_last_5_att: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     home_last_5_def: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     home_goals_for_total: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
     home_goals_against_total: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
     away_team_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
     away_team_name: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     away_team_logo: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     away_last_5_form: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     away_last_5_att: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     away_last_5_def: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     away_goals_for_total: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
     away_goals_against_total: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
     comparison_form_home: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     comparison_form_away: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     comparison_att_home: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     comparison_att_away: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     comparison_def_home: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     comparison_def_away: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     comparison_poisson_distribution_home: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     comparison_poisson_distribution_away: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     comparison_h2h_home: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     comparison_h2h_away: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
   },
   {

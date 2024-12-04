@@ -1,10 +1,12 @@
 import { LeagueTeam } from "../models/league-team";
-import { TeamResponse } from "../types/api-types";
+import { PredictionResponse, TeamResponse } from "../types/api-types";
 import { Match } from "../models/match";
 import MatchStats from "../models/match-stats";
 import { MatchOdds } from "../models/match-odds";
 import sequelize from "../database/sequelize";
 import Fixture from "../models/fixtures";
+import Prediction from "../models/predictions";
+import { Op } from "sequelize";
 
 export class DatabaseService {
   async saveLeagueTeams(teams: TeamResponse[]): Promise<void> {
@@ -239,10 +241,119 @@ export class DatabaseService {
   }
 
   async getFixtures(params: any): Promise<Fixture[]> {
-    //to do: add params where fixture_id not in predictions
-    return Fixture.findAll({
+    const predictions = await Prediction.findAll({
       attributes: ["fixture_id"],
     });
+    return Fixture.findAll({
+      attributes: ["fixture_id"],
+      where: {
+        fixture_id: {
+          [Op.notIn]: predictions.map((prediction) => prediction.fixture_id),
+        },
+      },
+    });
+  }
+
+  async savePredictions(predictions: PredictionResponse[]): Promise<void> {
+    await Prediction.bulkCreate(
+      predictions.map((prediction) => ({
+        fixture_id: prediction.fixture_id,
+        prediction_winner_id: prediction.predictions?.winner?.id,
+        prediction_winner_name: prediction.predictions?.winner?.name,
+        prediction_winner_comment: prediction.predictions?.winner?.comment,
+        prediction_win_or_draw: prediction.predictions?.win_or_draw,
+        prediction_under_over: prediction.predictions?.under_over,
+        prediction_goals_home: prediction.predictions?.goals?.home,
+        prediction_goals_away: prediction.predictions?.goals?.away,
+        prediction_advice: prediction.predictions?.advice,
+        prediction_percent_home: prediction.predictions?.percent?.home,
+        prediction_percent_draw: prediction.predictions?.percent?.draw,
+        prediction_percent_away: prediction.predictions?.percent?.away,
+        league_id: prediction.league?.id,
+        league_name: prediction.league?.name,
+        league_country: prediction.league?.country,
+        league_logo: prediction.league?.logo,
+        league_flag: prediction.league?.flag,
+        league_season: prediction.league?.season,
+        home_team_id: prediction.teams?.home?.id,
+        home_team_name: prediction.teams?.home?.name,
+        home_team_logo: prediction.teams?.home?.logo,
+        home_last_5_form: prediction.teams?.home?.last_5?.form,
+        home_last_5_att: prediction.teams?.home?.last_5?.att,
+        home_last_5_def: prediction.teams?.home?.last_5?.def,
+        home_goals_for_total: prediction.teams?.home?.last_5?.goals?.for?.total,
+        home_goals_against_total:
+          prediction.teams?.home?.last_5?.goals?.against?.total,
+        away_team_id: prediction.teams?.away?.id,
+        away_team_name: prediction.teams?.away?.name,
+        away_team_logo: prediction.teams?.away?.logo,
+        away_last_5_form: prediction.teams?.away?.last_5?.form,
+        away_last_5_att: prediction.teams?.away?.last_5?.att,
+        away_last_5_def: prediction.teams?.away?.last_5?.def,
+        away_goals_for_total: prediction.teams?.away?.last_5?.goals?.for?.total,
+        away_goals_against_total:
+          prediction.teams?.away?.last_5?.goals?.against?.total,
+        comparison_form_home: prediction.comparison?.form?.home,
+        comparison_form_away: prediction.comparison?.form?.away,
+        comparison_att_home: prediction.comparison?.att?.home,
+        comparison_att_away: prediction.comparison?.att?.away,
+        comparison_def_home: prediction.comparison?.def?.home,
+        comparison_def_away: prediction.comparison?.def?.away,
+        comparison_poisson_distribution_home:
+          prediction.comparison?.poisson_distribution?.home,
+        comparison_poisson_distribution_away:
+          prediction.comparison?.poisson_distribution?.away,
+        comparison_h2h_home: prediction.comparison?.h2h?.home,
+        comparison_h2h_away: prediction.comparison?.h2h?.away,
+      })),
+      {
+        updateOnDuplicate: [
+          "prediction_winner_id",
+          "prediction_winner_name",
+          "prediction_winner_comment",
+          "prediction_win_or_draw",
+          "prediction_under_over",
+          "prediction_goals_home",
+          "prediction_goals_away",
+          "prediction_advice",
+          "prediction_percent_home",
+          "prediction_percent_draw",
+          "prediction_percent_away",
+          "league_id",
+          "league_name",
+          "league_country",
+          "league_logo",
+          "league_flag",
+          "league_season",
+          "home_team_id",
+          "home_team_name",
+          "home_team_logo",
+          "home_last_5_form",
+          "home_last_5_att",
+          "home_last_5_def",
+          "home_goals_for_total",
+          "home_goals_against_total",
+          "away_team_id",
+          "away_team_name",
+          "away_team_logo",
+          "away_last_5_form",
+          "away_last_5_att",
+          "away_last_5_def",
+          "away_goals_for_total",
+          "away_goals_against_total",
+          "comparison_form_home",
+          "comparison_form_away",
+          "comparison_att_home",
+          "comparison_att_away",
+          "comparison_def_home",
+          "comparison_def_away",
+          "comparison_poisson_distribution_home",
+          "comparison_poisson_distribution_away",
+          "comparison_h2h_home",
+          "comparison_h2h_away",
+        ],
+      }
+    );
   }
 
   async getMatchesForJson(date: string, leagueName: string): Promise<any[]> {

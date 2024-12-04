@@ -17,13 +17,14 @@ export async function fetchPredictions(
   try {
     const predictionsService = new PredictionsService();
     const fetchedData = await predictionsService.fetchPredictions();
+
     const dbService = new DatabaseService();
-    // const saved = await dbService.savePredictions(fetchedData);
+    await dbService.savePredictions(fetchedData);
+
     res.json({
       message: "Predictions fetched successfully",
       count: fetchedData.length,
       data: fetchedData,
-      // saved,
       success: true,
       status: 200,
     });
