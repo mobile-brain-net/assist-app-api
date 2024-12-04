@@ -9,6 +9,6 @@ const router = Router();
 
 router.get("/matches", getMatches);
 router.post("/fetch-matches", fetchMatchData);
-router.get("/get-matches", getMatchesForJson);
+router.get("/get-matches",  getMatchesForJson)
 
 export const matchesRouter = router;

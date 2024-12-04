@@ -1,7 +1,8 @@
 import { DatabaseService } from "../database/database-service";
 import axios from "axios";
 import { Match } from "../models/match";
-
+import { CompetitionMap } from "../types/competition";
+import { GetMatchesResponse } from "../types/api-types";
 export class MatchesService {
   private dbService: DatabaseService;
 
@@ -23,9 +24,55 @@ export class MatchesService {
     return matches;
   }
 
-  async getMatchesForJson(params: any): Promise<Match[]> {
-    const { date, league_name } = params;
+  competitionIds: CompetitionMap = {
+    "Premier League": {
+      "2023": 9660,
+      "2024": 12325,
+    },
+    // "La Liga": {
+    //   "2023": 4,
+    //   "2024": 5,
+    // },
+    // Add more leagues and years as needed
+  };
 
-    return this.dbService.getMatchesForJson(date, league_name);
+  async getMatchesForJson(params: {
+    date: string;
+    league_name: string;
+  }): Promise<any> {
+    //TO DO -ADD TYPE TO PROMISE
+    const { date, league_name } = params;
+    if (!date || !league_name) {
+      return [];
+    }
+    try {
+      const year = date.split("-")[0];
+      const competitionId = this.competitionIds[league_name]?.[year] || null;
+
+      if (!competitionId) {
+        return [];
+      }
+
+      const seasons = await this.dbService.getSeasons(competitionId);
+      const matchesDataForJson = await this.dbService.getMatchesForJson(
+        date,
+        competitionId
+      );
+      console.log(
+        "🚀 ~ MatchesService ~ matchesDataForJson:",
+        matchesDataForJson
+      );
+
+      // const matchesData: GetMatchesResponse = {
+      //   competition: seasons[0].season,
+      //   matches: [],
+      // };
+
+      // return matchesData;
+      return matchesDataForJson;
+    } catch (error) {
+      console.error("Error fetching matches:", error);
+      return [];
+    }
   }
 }

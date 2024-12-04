@@ -7,6 +7,7 @@ import sequelize from "../database/sequelize";
 import Fixture from "../models/fixtures";
 import Prediction from "../models/predictions";
 import { Op } from "sequelize";
+import dayjs from "dayjs";
 
 export class DatabaseService {
   async saveLeagueTeams(teams: TeamResponse[]): Promise<void> {
@@ -356,24 +357,32 @@ export class DatabaseService {
     );
   }
 
-  async getMatchesForJson(date: string, leagueName: string): Promise<any[]> {
-    if (!date || !leagueName) {
+  async getSeasons(competitionId: number): Promise<any[]> {
+    return Match.findAll({
+      attributes: ["season"],
+      group: ["season"],
+      where: {
+        competition_id: competitionId,
+        date_unix: {
+          [Op.gt]: dayjs().subtract(14, "day").unix(), // Greater than 14 days ago
+          [Op.lt]: dayjs().add(14, "day").unix(), // Less than 14 days from now
+        },
+      },
+    });
+  }
+
+  async getMatchesForJson(date: string, competitionId: number): Promise<any[]> {
+    if (!date || !competitionId) {
       return [];
     }
-    const teams = await LeagueTeam.findAll({
-      attributes: [
-        ["clean_name", "name"],
-        ["clean_name", "logo"],
-      ],
-      order: [["clean_name", "DESC"]],
+    return Match.findAll({
+      where: {
+        competition_id: competitionId,
+        date_unix: {
+          [Op.gt]: dayjs().subtract(14, "day").unix(), // Greater than 14 days ago
+          [Op.lt]: dayjs().add(14, "day").unix(), // Less than 14 days from now
+        },
+      },
     });
-
-    return teams.map((team) => ({
-      uefa_euro_qualifiers_group: null,
-      uefa_euro_qualifiers_table: null,
-      uefa_euro_championship_group: null,
-      uefa_euro_championship_table: null,
-      ...team.toJSON(),
-    }));
   }
 }

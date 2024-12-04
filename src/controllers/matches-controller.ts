@@ -36,8 +36,22 @@ export async function getMatchesForJson(
   req: Request,
   res: Response,
   next: NextFunction
-) {
-  const matchesService = new MatchesService();
-  const matches = await matchesService.getMatchesForJson(req.query);
-  res.json(matches);
+): Promise<void> {
+  try {
+    const { date, league_name } = req.query;
+
+    if (typeof date !== "string" || typeof league_name !== "string") {
+      res.status(400).json({ error: "Invalid parameters" });
+      return;
+    }
+
+    const matchesService = new MatchesService();
+    const matches = await matchesService.getMatchesForJson({
+      date,
+      league_name,
+    });
+    res.status(200).json(matches);
+  } catch (err) {
+    next(err);
+  }
 }
