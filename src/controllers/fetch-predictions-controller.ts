@@ -13,11 +13,19 @@ export async function fetchPredictions(
   req: Request,
   res: Response,
   next: NextFunction
-) {
+): Promise<void> {
   try {
     const predictionsService = new PredictionsService();
     const fetchedData = await predictionsService.fetchPredictions();
 
+    if (fetchedData.length === 0) {
+      res.json({
+        message: "No new predictions found",
+        success: true,
+        status: 200,
+      });
+      return;
+    }
     const dbService = new DatabaseService();
     await dbService.savePredictions(fetchedData);
 
