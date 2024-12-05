@@ -383,6 +383,40 @@ export class DatabaseService {
           [Op.lt]: dayjs().add(14, "day").unix(), // Less than 14 days from now
         },
       },
+      include: [
+        {
+          model: LeagueTeam,
+          attributes: ["id", "name", "image"],
+          as: "home", // Assuming you have an alias for home team
+          required: false, // Use true if you want to enforce the join
+          where: {
+            id: {
+              [Op.eq]: sequelize.col("Match.home_team_id"),
+            },
+          },
+        },
+        {
+          model: LeagueTeam,
+          attributes: ["id", "name", "image"],
+          as: "away", // Assuming you have an alias for away team
+          required: false, // Use true if you want to enforce the join
+          where: {
+            id: {
+              [Op.eq]: sequelize.col("Match.away_team_id"),
+            },
+          },
+        },
+        {
+          model: MatchStats,
+          attributes: ["home_goals", "away_goals"],
+          as: "stats",
+        },
+        {
+          model: MatchOdds,
+          attributes: ["odds_ft_1", "odds_ft_x", "odds_ft_2"],
+          as: "odds",
+        },
+      ],
     });
   }
 }

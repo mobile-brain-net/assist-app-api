@@ -16,12 +16,12 @@ Match.hasOne(MatchOdds, {
 
 Match.belongsTo(LeagueTeam, {
   foreignKey: "home_team_id",
-  as: "homeTeam",
+  as: "home",
 });
 
 Match.belongsTo(LeagueTeam, {
   foreignKey: "away_team_id",
-  as: "awayTeam",
+  as: "away",
 });
 
 // MatchStats associations

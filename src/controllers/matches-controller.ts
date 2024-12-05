@@ -26,6 +26,7 @@ export async function fetchMatchData(
     res.json({
       message: "Match data fetched and saved successfully",
       matches: fetchedData.length,
+      data: fetchedData,
     });
   } catch (err) {
     next(err);
