@@ -1,7 +1,7 @@
 import { DatabaseService } from "../database/database-service";
 
 import axios from "axios";
-import { TeamResponse } from "../types/api-types";
+//import { TeamResponse } from "../types/api-types";
 //import { PredictionResponse } from "../types/api-types";
 import { FixturesService } from "./fixtures-service";
 
@@ -43,5 +43,18 @@ export class PredictionsService {
       }
     }
     return predictions;
+  }
+
+  async getPredictionsByTeams(
+    homeTeam: string,
+    awayTeam: string,
+    leagueId: number
+  ): Promise<any[]> {
+    const predictionForMatch = await this.dbService.getPredictionsByTeams(
+      homeTeam,
+      awayTeam,
+      leagueId
+    );
+    return predictionForMatch;
   }
 }

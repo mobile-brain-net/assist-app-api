@@ -283,8 +283,12 @@ export class DatabaseService {
         home_last_5_att: prediction.teams?.home?.last_5?.att,
         home_last_5_def: prediction.teams?.home?.last_5?.def,
         home_goals_for_total: prediction.teams?.home?.last_5?.goals?.for?.total,
+        home_goals_for_average:
+          prediction.teams?.home?.last_5?.goals?.for?.average,
         home_goals_against_total:
           prediction.teams?.home?.last_5?.goals?.against?.total,
+        home_goals_against_average:
+          prediction.teams?.home?.last_5?.goals?.against?.average,
         away_team_id: prediction.teams?.away?.id,
         away_team_name: prediction.teams?.away?.name,
         away_team_logo: prediction.teams?.away?.logo,
@@ -292,6 +296,8 @@ export class DatabaseService {
         away_last_5_att: prediction.teams?.away?.last_5?.att,
         away_last_5_def: prediction.teams?.away?.last_5?.def,
         away_goals_for_total: prediction.teams?.away?.last_5?.goals?.for?.total,
+        away_goals_for_average:
+          prediction.teams?.away?.last_5?.goals?.for?.average,
         away_goals_against_total:
           prediction.teams?.away?.last_5?.goals?.against?.total,
         comparison_form_home: prediction.comparison?.form?.home,
@@ -417,6 +423,24 @@ export class DatabaseService {
           as: "odds",
         },
       ],
+      order: [["date_unix", "DESC"]],
+    });
+  }
+
+  async getPredictionsByTeams(
+    homeTeam: string,
+    awayTeam: string,
+    leagueId: number
+  ): Promise<any[]> {
+    return Prediction.findAll({
+      where: {
+        league_id: leagueId,
+        fixture_id: {
+          [Op.eq]: sequelize.literal(
+            `(SELECT max(fixture_id) FROM fixtures WHERE home_team_name = '${homeTeam}' AND away_team_name = '${awayTeam}')`
+          ),
+        },
+      },
     });
   }
 }

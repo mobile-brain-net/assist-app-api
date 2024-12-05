@@ -103,6 +103,10 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: true,
       },
+      home_goals_for_average: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
       home_goals_against_total: {
         type: Sequelize.INTEGER,
         allowNull: true,
@@ -133,6 +137,10 @@ module.exports = {
       },
       away_goals_for_total: {
         type: Sequelize.INTEGER,
+        allowNull: true,
+      },
+      away_goals_for_average: {
+        type: Sequelize.STRING,
         allowNull: true,
       },
       away_goals_against_total: {

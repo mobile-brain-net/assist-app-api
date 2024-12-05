@@ -2,17 +2,25 @@ import { DatabaseService } from "../database/database-service";
 import axios from "axios";
 import { Match } from "../models/match";
 import { CompetitionMap } from "../types/competition";
+import { LeagueIdMap } from "../types/leagues";
 import { GetMatchesResponse } from "../types/api-types";
 import { NormalizedPlTeam } from "../types/teams";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
+import { PredictionsService } from "./predictions-service";
+import Prediction from "../models/predictions";
+
+// Define the Prediction type based on the Prediction model
+type PredictionType = Omit<Prediction, "id" | "createdAt" | "updatedAt">; // Exclude any auto-generated fields if necessary
 
 export class MatchesService {
   private dbService: DatabaseService;
+  private predictionsService: PredictionsService;
 
   constructor() {
     this.dbService = new DatabaseService();
+    this.predictionsService = new PredictionsService();
   }
 
   async getMatches(params: any): Promise<Match[]> {
@@ -46,6 +54,10 @@ export class MatchesService {
     // Add more leagues and years as needed
   };
 
+  leagueIdMap: LeagueIdMap = {
+    "Premier League": 39,
+  };
+
   async getMatchesForJson(params: {
     date: string;
     league_name: string;
@@ -58,8 +70,9 @@ export class MatchesService {
     try {
       const year = date.split("-")[0];
       const competitionId = this.competitionIds[league_name]?.[year] || null;
+      const leagueId = this.leagueIdMap[league_name] || null;
 
-      if (!competitionId) {
+      if (!leagueId || !competitionId) {
         return [];
       }
 
@@ -77,7 +90,7 @@ export class MatchesService {
         return { normalizedHomeTeamName, normalizedAwayTeamName };
       });
 
-      const newData = matchesDataForJson.map((match) => {
+      const newData = matchesDataForJson.map(async (match) => {
         dayjs.extend(utc);
         dayjs.extend(timezone);
 
@@ -86,9 +99,17 @@ export class MatchesService {
         const oddsHome = Math.round((match.odds.odds_ft_1 / oddsTotal) * 100);
         const oddsDraw = Math.round((match.odds.odds_ft_x / oddsTotal) * 100);
         const oddsAway = Math.round((match.odds.odds_ft_2 / oddsTotal) * 100);
+        const prediction: PredictionType = (
+          await this.predictionsService.getPredictionsByTeams(
+            NormalizedPlTeam[match.home.name as keyof typeof NormalizedPlTeam],
+            NormalizedPlTeam[match.away.name as keyof typeof NormalizedPlTeam],
+            leagueId
+          )
+        )[0];
+        // console.log("🚀 ~ MatchesService ~ newData ~ prediction:", prediction);
 
         return {
-          competition: seasons[0].season,
+          // competition: seasons[0].season,
           date: dayjs
             .unix(match.date_unix)
             .tz("Europe/London")
@@ -124,16 +145,38 @@ export class MatchesService {
             draw: oddsDraw,
             away_win: oddsAway,
           },
+          prediction: {
+            fixture_id: prediction?.fixture_id,
+            league_id: prediction?.league_id,
+            league_name: prediction?.league_name,
+            league_country: prediction?.league_country,
+            league_logo: prediction?.league_logo,
+            league_flag: prediction?.league_flag,
+            league_season: prediction?.league_season,
+            teams_home_last_5_att: prediction?.home_last_5_att,
+            teams_away_last_5_att: prediction?.away_last_5_att,
+            teams_home_last_5_def: prediction?.home_last_5_def,
+            teams_away_last_5_def: prediction?.away_last_5_def,
+            teams_home_last_5_goals_for_average:
+              prediction?.home_goals_for_average,
+            teams_away_last_5_goals_for_average:
+              prediction?.away_goals_for_average,
+            teams_home_last_5_form: prediction?.home_last_5_form,
+            teams_away_last_5_form: prediction?.away_last_5_form,
+            predictions_percent_home: prediction?.predictions_percent_home,
+            predictions_percent_draw: prediction?.predictions_percent_draw,
+            predictions_percent_away: prediction?.predictions_percent_away,
+          },
         };
       });
-      console.log("🚀 ~ MatchesService ~ newData ~ newData:", newData);
-      // const matchesData: GetMatchesResponse = {
-      //   competition: seasons[0].season,
-      //   matches: [],
-      // };
 
-      // return matchesData;
-      return matchesDataForJson;
+      const matchesData: GetMatchesResponse = {
+        competition: seasons[0].season,
+        matches: await Promise.all(newData),
+      };
+
+      return matchesData;
+      // return matchesDataForJson;
     } catch (error) {
       console.error("Error fetching matches:", error);
       return [];

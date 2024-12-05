@@ -66,9 +66,11 @@ export interface PredictionResponse {
         goals: {
           for: {
             total: string;
+            average: string;
           };
           against: {
             total: string;
+            average: string;
           };
         };
       };
@@ -84,6 +86,7 @@ export interface PredictionResponse {
         goals: {
           for: {
             total: string;
+            average: string;
           };
           against: {
             total: string;
@@ -118,55 +121,47 @@ export interface PredictionResponse {
 
 export interface GetMatchesResponse {
   competition: string;
-  matches: [
-    {
-      date: string;
-      home: {
-        name: string;
-        icon: string;
-        kits: string;
-      };
-      away: {
-        name: string;
-        icon: string;
-        kits: string;
-      };
-      result: {
-        status: string;
-        homegoals: number | null;
-        awaygoals: number | null;
-      };
-      odds: {
-        away_win: number;
-        draw: number;
-        home_win: number;
-      };
-      prediction: {
-        fixture_id: number;
-        predictions_winner_id: number;
-        predictions_winner_name: string;
-        predictions_winner_comment: string;
-        predictions_win_or_draw: boolean | null;
-        predictions_under_over: string | null;
-        predictions_goals_home: string;
-        predictions_goals_away: string;
-        predictions_advice: string;
-        predictions_percent_home: string;
-        predictions_percent_draw: string;
-        predictions_percent_away: string;
-        league_id: number;
-        league_name: string;
-        league_country: string;
-        league_logo: string;
-        league_flag: string;
-        league_season: number;
-        teams_home_id: number;
-        teams_home_name: string;
-        teams_home_logo: string;
-        teams_away_id: number;
-        teams_away_name: string;
-        teams_away_logo: string;
-      };
-    }
-  ];
+  matches: Array<{
+    date: string;
+    home: {
+      name: string;
+      icon: string;
+      kits: string;
+    };
+    away: {
+      name: string;
+      icon: string;
+      kits: string;
+    };
+    result: {
+      status: string;
+      home_goals: number | null;
+      away_goals: number | null;
+    };
+    odds: {
+      home_win: number;
+      draw: number;
+      away_win: number;
+    };
+    prediction: {
+      fixture_id: number;
+      league_id: number;
+      league_name: string;
+      league_country: string;
+      league_logo: string;
+      league_flag: string;
+      league_season: number;
+      teams_home_last_5_att: string;
+      teams_away_last_5_att: string;
+      teams_home_last_5_def: string;
+      teams_away_last_5_def: string;
+      teams_home_last_5_goals_for_average: string;
+      teams_away_last_5_goals_for_average: string;
+      teams_home_last_5_form: string;
+      teams_away_last_5_form: string;
+      predictions_percent_home: string;
+      predictions_percent_draw: string;
+      predictions_percent_away: string;
+    };
+  }>;
 }

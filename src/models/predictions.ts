@@ -28,7 +28,9 @@ export class Prediction extends Model {
   public home_last_5_att!: string;
   public home_last_5_def!: string;
   public home_goals_for_total!: number;
+  public home_goals_for_average!: string;
   public home_goals_against_total!: number;
+  public home_goals_against_average!: string;
 
   public away_team_id!: number;
   public away_team_name!: string;
@@ -37,7 +39,9 @@ export class Prediction extends Model {
   public away_last_5_att!: string;
   public away_last_5_def!: string;
   public away_goals_for_total!: number;
+  public away_goals_for_average!: string;
   public away_goals_against_total!: number;
+  public away_goals_against_average!: string;
 
   public comparison_form_home!: string;
   public comparison_form_away!: string;
@@ -154,6 +158,10 @@ Prediction.init(
       type: DataTypes.INTEGER,
       allowNull: true,
     },
+    home_goals_for_average: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     home_goals_against_total: {
       type: DataTypes.INTEGER,
       allowNull: true,
@@ -184,6 +192,10 @@ Prediction.init(
     },
     away_goals_for_total: {
       type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    away_goals_for_average: {
+      type: DataTypes.STRING,
       allowNull: true,
     },
     away_goals_against_total: {
