@@ -433,6 +433,30 @@ export class DatabaseService {
     leagueId: number
   ): Promise<any[]> {
     return Prediction.findAll({
+      attributes: [
+        "fixture_id",
+        "predictions_percent_home",
+        "predictions_percent_draw",
+        "predictions_percent_away",
+        "league_id",
+        "league_name",
+        "league_country",
+        "league_logo",
+        "league_flag",
+        "league_season",
+        ["home_team_name", "teams_home_name"],
+        ["away_team_name", "teams_away_name"],
+        ["home_last_5_form", "teams_home_last_5_form"],
+        ["away_last_5_form", "teams_away_last_5_form"],
+        ["home_last_5_att", "teams_home_last_5_att"],
+        ["away_last_5_att", "teams_away_last_5_att"],
+        ["home_last_5_def", "teams_home_last_5_def"],
+        ["away_last_5_def", "teams_away_last_5_def"],
+        ["home_goals_for_total", "teams_home_goals_for_total"],
+        ["home_goals_for_average", "teams_home_goals_for_average"],
+        ["away_goals_for_total", "teams_away_goals_for_total"],
+        ["away_goals_for_average", "teams_away_goals_for_average"],
+      ],
       where: {
         league_id: leagueId,
         fixture_id: {

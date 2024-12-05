@@ -61,124 +61,108 @@ export class MatchesService {
   async getMatchesForJson(params: {
     date: string;
     league_name: string;
-  }): Promise<any> {
-    //TO DO -ADD TYPE TO PROMISE
+  }): Promise<GetMatchesResponse | []> {
     const { date, league_name } = params;
-    if (!date || !league_name) {
-      return [];
-    }
+    if (!date || !league_name) return [];
+
     try {
       const year = date.split("-")[0];
       const competitionId = this.competitionIds[league_name]?.[year] || null;
       const leagueId = this.leagueIdMap[league_name] || null;
 
-      if (!leagueId || !competitionId) {
-        return [];
-      }
+      if (!leagueId || !competitionId) return [];
 
       const seasons = await this.dbService.getSeasons(competitionId);
       const matchesDataForJson = await this.dbService.getMatchesForJson(
         date,
         competitionId
       );
-
-      const matchesDataForJsonWithPredictions = matchesDataForJson.map(
-        async (match) => {
-          dayjs.extend(utc);
-          dayjs.extend(timezone);
-          const oddsTotal =
-            match.odds.odds_ft_1 + match.odds.odds_ft_x + match.odds.odds_ft_2;
-          const oddsHome = Math.round((match.odds.odds_ft_1 / oddsTotal) * 100);
-          const oddsDraw = Math.round((match.odds.odds_ft_x / oddsTotal) * 100);
-          const oddsAway = Math.round((match.odds.odds_ft_2 / oddsTotal) * 100);
-          const prediction: PredictionType = (
-            await this.predictionsService.getPredictionsByTeams(
-              NormalizedPlTeam[
-                match.home.name as keyof typeof NormalizedPlTeam
-              ],
-              NormalizedPlTeam[
-                match.away.name as keyof typeof NormalizedPlTeam
-              ],
-              leagueId
-            )
-          )[0];
-
-          return {
-            date: dayjs
-              .unix(match.date_unix)
-              .tz("Europe/London")
-              .format("DD/MM/YYYY HH:mm"),
-            home: {
-              name: NormalizedPlTeam[
-                match.home.name as keyof typeof NormalizedPlTeam
-              ],
-              icon: match.home.image,
-              kits: `/api/images/home/${
-                NormalizedPlTeam[
-                  match.home.name as keyof typeof NormalizedPlTeam
-                ]
-              }.svg`,
-            },
-            away: {
-              name: NormalizedPlTeam[
-                match.away.name as keyof typeof NormalizedPlTeam
-              ],
-              icon: match.away.image,
-              kits: `/api/images/away/${
-                NormalizedPlTeam[
-                  match.away.name as keyof typeof NormalizedPlTeam
-                ]
-              }.svg`,
-            },
-            result: {
-              status: match.date_unix >= dayjs().unix() ? "ns" : "f", // Determine match status
-              //if game status is 'ns' (not started) then don't show goals
-              home_goals:
-                match.stats.status == "f" ? match.stats.home_goals : null,
-              away_goals:
-                match.stats.status == "f" ? match.stats.away_goals : null,
-            },
-            odds: {
-              home_win: oddsHome,
-              draw: oddsDraw,
-              away_win: oddsAway,
-            },
-            prediction: {
-              fixture_id: prediction?.fixture_id,
-              league_id: prediction?.league_id,
-              league_name: prediction?.league_name,
-              league_country: prediction?.league_country,
-              league_logo: prediction?.league_logo,
-              league_flag: prediction?.league_flag,
-              league_season: prediction?.league_season,
-              teams_home_last_5_att: prediction?.home_last_5_att,
-              teams_away_last_5_att: prediction?.away_last_5_att,
-              teams_home_last_5_def: prediction?.home_last_5_def,
-              teams_away_last_5_def: prediction?.away_last_5_def,
-              teams_home_last_5_goals_for_average:
-                prediction?.home_goals_for_average,
-              teams_away_last_5_goals_for_average:
-                prediction?.away_goals_for_average,
-              teams_home_last_5_form: prediction?.home_last_5_form,
-              teams_away_last_5_form: prediction?.away_last_5_form,
-              predictions_percent_home: prediction?.predictions_percent_home,
-              predictions_percent_draw: prediction?.predictions_percent_draw,
-              predictions_percent_away: prediction?.predictions_percent_away,
-            },
-          };
-        }
+      const matchesData = await this.mapMatchesWithPredictions(
+        matchesDataForJson,
+        leagueId
       );
 
-      const matchesData: GetMatchesResponse = {
+      return {
         competition: seasons[0].season,
-        matches: await Promise.all(matchesDataForJsonWithPredictions),
+        matches: matchesData,
       };
-
-      return matchesData;
-      // return matchesDataForJson;
     } catch (error) {
       console.error("Error fetching matches:", error);
       return [];
     }
+  }
+
+  private async mapMatchesWithPredictions(
+    matchesDataForJson: any[],
+    leagueId: number
+  ): Promise<any[]> {
+    return Promise.all(
+      matchesDataForJson.map(async (match) => {
+        dayjs.extend(utc);
+        dayjs.extend(timezone);
+        const odds = this.calculateOdds(match.odds);
+        const prediction = (await this.getPrediction(match, leagueId))!;
+
+        return {
+          date: dayjs
+            .unix(match.date_unix)
+            .tz("Europe/London")
+            .format("DD/MM/YYYY HH:mm"),
+          home: this.mapTeam(match.home),
+          away: this.mapTeam(match.away),
+          result: this.mapResult(match),
+          odds,
+          prediction,
+        };
+      })
+    );
+  }
+
+  private calculateOdds(odds: any): {
+    home_win: number;
+    draw: number;
+    away_win: number;
+  } {
+    const oddsTotal = odds.odds_ft_1 + odds.odds_ft_x + odds.odds_ft_2;
+    return {
+      home_win: Math.round((odds.odds_ft_1 / oddsTotal) * 100),
+      draw: Math.round((odds.odds_ft_x / oddsTotal) * 100),
+      away_win: Math.round((odds.odds_ft_2 / oddsTotal) * 100),
+    };
+  }
+
+  private async getPrediction(
+    match: any,
+    leagueId: number
+  ): Promise<PredictionType | undefined> {
+    return (
+      await this.predictionsService.getPredictionsByTeams(
+        NormalizedPlTeam[match.home.name as keyof typeof NormalizedPlTeam],
+        NormalizedPlTeam[match.away.name as keyof typeof NormalizedPlTeam],
+        leagueId
+      )
+    )[0];
+  }
+
+  private mapTeam(team: any): { name: string; icon: string; kits: string } {
+    return {
+      name: NormalizedPlTeam[team.name as keyof typeof NormalizedPlTeam],
+      icon: team.image,
+      kits: `/api/images/home/${
+        NormalizedPlTeam[team.name as keyof typeof NormalizedPlTeam]
+      }.svg`,
+    };
+  }
+
+  private mapResult(match: any): {
+    status: string;
+    home_goals: number | null;
+    away_goals: number | null;
+  } {
+    return {
+      status: match.date_unix >= dayjs().unix() ? "ns" : "f",
+      home_goals: match.stats.status === "f" ? match.stats.home_goals : null,
+      away_goals: match.stats.status === "f" ? match.stats.away_goals : null,
+    };
   }
 }
