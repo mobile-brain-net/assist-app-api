@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
+import path from "path";
 import { teamsRouter } from "./routes/teams-router";
 import { errorHandler } from "./middleware/error-handler";
 import { initDatabase } from "./database/sequelize";
@@ -20,6 +21,9 @@ app.use("/api", teamsRouter);
 app.use("/api", matchesRouter);
 app.use("/api", fixturesRouter);
 app.use("/api", predictionsRouter);
+// Serve static files from the images directory
+app.use("/api/images", express.static(path.join(__dirname, "images")));
+
 // Error handling
 app.use(errorHandler);
 

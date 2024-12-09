@@ -385,8 +385,8 @@ export class DatabaseService {
       where: {
         competition_id: competitionId,
         date_unix: {
-          [Op.gt]: dayjs().subtract(14, "day").unix(), // Greater than 14 days ago
-          [Op.lt]: dayjs().add(14, "day").unix(), // Less than 14 days from now
+          [Op.gt]: dayjs().subtract(15, "day").unix(), // Greater than 14 days ago
+          [Op.lte]: dayjs().add(14, "day").unix(), // Less than 14 days from now
         },
       },
       include: [

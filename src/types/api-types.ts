@@ -119,7 +119,7 @@ export interface PredictionResponse {
   };
 }
 
-export interface GetMatchesResponse {
+export type GetMatchesResponse = Array<{
   competition: string;
   matches: Array<{
     date: string;
@@ -164,4 +164,4 @@ export interface GetMatchesResponse {
       predictions_percent_away: string;
     };
   }>;
-}
+}>;

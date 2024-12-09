@@ -82,10 +82,12 @@ export class MatchesService {
         leagueId
       );
 
-      return {
-        competition: seasons[0].season,
-        matches: matchesData,
-      };
+      return [
+        {
+          competition: seasons[0].season,
+          matches: matchesData,
+        },
+      ];
     } catch (error) {
       console.error("Error fetching matches:", error);
       return [];
@@ -101,7 +103,36 @@ export class MatchesService {
         dayjs.extend(utc);
         dayjs.extend(timezone);
         const odds = this.calculateOdds(match.odds);
-        const prediction = (await this.getPrediction(match, leagueId))!;
+        // Non-null assertion (!) forces TypeScript to treat the possibly undefined prediction as defined
+        // This could cause runtime errors if getPrediction returns undefined
+        // Consider handling the undefined case explicitly instead
+        let prediction = (await this.getPrediction(match, leagueId))!;
+        if (!prediction) {
+          prediction = <any>{
+            fixture_id: "",
+            predictions_percent_home: "0",
+            predictions_percent_draw: "0",
+            predictions_percent_away: "0",
+            league_id: 39,
+            league_name: "Premier League",
+            league_country: "England",
+            league_logo: "https://media.api-sports.io/football/leagues/39.png",
+            league_flag: "https://media.api-sports.io/flags/gb-eng.svg",
+            league_season: 0,
+            home_team_name: "",
+            away_team_name: "",
+            home_last_5_form: "",
+            away_last_5_form: "",
+            home_last_5_att: "",
+            away_last_5_att: "",
+            teams_home_last_5_def: "",
+            teams_away_last_5_def: "",
+            teams_home_goals_for_total: 0,
+            teams_home_goals_for_average: "",
+            teams_away_goals_for_total: 0,
+            teams_away_goals_for_average: "",
+          };
+        }
 
         return {
           date: dayjs
@@ -124,10 +155,23 @@ export class MatchesService {
     away_win: number;
   } {
     const oddsTotal = odds.odds_ft_1 + odds.odds_ft_x + odds.odds_ft_2;
+    if (oddsTotal === 0) {
+      return {
+        home_win: 0,
+        draw: 0,
+        away_win: 0,
+      };
+    }
+    let home_win = Math.round((odds.odds_ft_1 / oddsTotal) * 100);
+    const draw = Math.round((odds.odds_ft_x / oddsTotal) * 100);
+    const away_win = Math.round((odds.odds_ft_2 / oddsTotal) * 100);
+    if (home_win + draw + away_win !== 100) {
+      home_win = 100 - (draw + away_win);
+    }
     return {
-      home_win: Math.round((odds.odds_ft_1 / oddsTotal) * 100),
-      draw: Math.round((odds.odds_ft_x / oddsTotal) * 100),
-      away_win: Math.round((odds.odds_ft_2 / oddsTotal) * 100),
+      home_win,
+      draw,
+      away_win,
     };
   }
 
@@ -156,13 +200,13 @@ export class MatchesService {
 
   private mapResult(match: any): {
     status: string;
-    home_goals: number | null;
-    away_goals: number | null;
+    homegoals: number | null;
+    awaygoals: number | null;
   } {
     return {
       status: match.date_unix >= dayjs().unix() ? "ns" : "f",
-      home_goals: match.stats.status === "f" ? match.stats.home_goals : null,
-      away_goals: match.stats.status === "f" ? match.stats.away_goals : null,
+      homegoals: match.stats.status === "f" ? match.stats.home_goals : null,
+      awaygoals: match.stats.status === "f" ? match.stats.away_goals : null,
     };
   }
 }
