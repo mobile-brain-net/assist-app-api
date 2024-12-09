@@ -14,6 +14,12 @@ import Prediction from "../models/predictions";
 // Define the Prediction type based on the Prediction model
 type PredictionType = Omit<Prediction, "id" | "createdAt" | "updatedAt">; // Exclude any auto-generated fields if necessary
 
+interface TeamData {
+  name: string;
+  image: string;
+  table_position: number;
+}
+
 export class MatchesService {
   private dbService: DatabaseService;
   private predictionsService: PredictionsService;
@@ -31,6 +37,7 @@ export class MatchesService {
     const premierLeagueId = 12325;
     try {
       const requestUrl = `https://api.football-data-api.com/league-matches?key=${process.env.FOOTBALL_DATA_API_KEY}&league_id=${premierLeagueId}`;
+      console.log(requestUrl);
       const response = await axios.get(requestUrl);
       const matches = response.data.data;
       await this.dbService.saveMatches(matches);
@@ -208,5 +215,39 @@ export class MatchesService {
       homegoals: match.stats.status === "f" ? match.stats.home_goals : null,
       awaygoals: match.stats.status === "f" ? match.stats.away_goals : null,
     };
+  }
+
+  async aggregateMatches(params: {
+    year: string;
+    league_name: string;
+  }): Promise<any[]> {
+    const { year, league_name } = params;
+    if (!year || !league_name) return [];
+
+    const competitionId = this.competitionIds[league_name]?.[year] || null;
+    if (!competitionId) return [];
+
+    const matches = await this.dbService.getMatches({
+      competition_id: competitionId,
+    });
+
+    const overAllStats = await this.dbService.getOverAllStats(competitionId);
+
+    // Get unique teams from matches
+    const uniqueTeams = new Set(
+      matches.map((m) => m.homeTeamId).concat(matches.map((m) => m.awayTeamId))
+    );
+
+    let matchesWithOverall: any[] = [];
+    matches.map((match) => {
+      if (match) {
+        // Check if match is defined
+        const overallStats = overAllStats.find(
+          (stat) => stat.id === match.homeTeamId
+        );
+        matchesWithOverall.push({ ...match, overallStats });
+      }
+    });
+    return matchesWithOverall;
   }
 }

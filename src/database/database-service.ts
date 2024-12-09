@@ -6,7 +6,7 @@ import { MatchOdds } from "../models/match-odds";
 import sequelize from "../database/sequelize";
 import Fixture from "../models/fixtures";
 import Prediction from "../models/predictions";
-import { Op } from "sequelize";
+import { Op, QueryTypes } from "sequelize";
 import dayjs from "dayjs";
 
 export class DatabaseService {
@@ -59,7 +59,7 @@ export class DatabaseService {
   }
 
   async getMatches(params: any): Promise<Match[]> {
-    return Match.findAll({
+    const matches = await Match.findAll({
       where: params,
       include: [
         {
@@ -70,7 +70,87 @@ export class DatabaseService {
           model: MatchOdds,
           as: "odds",
         },
+        {
+          model: LeagueTeam,
+          as: "home",
+        },
+        {
+          model: LeagueTeam,
+          as: "away",
+        },
       ],
+    });
+    return matches.map((match) => match.toJSON());
+  }
+
+  async getOverAllStats(competitionId: number): Promise<any[]> {
+    const query = `SELECT 
+    t.id,
+    t.name,
+    COUNT(DISTINCT m.id) as matchesPlayed,
+    SUM(CASE WHEN 
+        (m.home_team_id = t.id AND s.home_goals > s.away_goals) OR 
+        (m.away_team_id = t.id AND s.away_goals > s.home_goals)
+        THEN 1 ELSE 0 END) as wins,
+    SUM(CASE WHEN s.home_goals = s.away_goals THEN 1 ELSE 0 END) as draws,
+    SUM(CASE WHEN 
+        (m.home_team_id = t.id AND s.home_goals < s.away_goals) OR 
+        (m.away_team_id = t.id AND s.away_goals < s.home_goals)
+        THEN 1 ELSE 0 END) as losses,
+    (SUM(CASE WHEN 
+        (m.home_team_id = t.id AND s.home_goals > s.away_goals) OR 
+        (m.away_team_id = t.id AND s.away_goals > s.home_goals)
+        THEN 3 
+        WHEN s.home_goals = s.away_goals THEN 1
+        ELSE 0 END)) as points,
+    SUM(CASE WHEN m.home_team_id = t.id THEN s.home_goals ELSE s.away_goals END) as goalsScored,
+    SUM(CASE WHEN m.home_team_id = t.id THEN s.home_goals ELSE 0 END) as goalsScoredHome,
+    SUM(CASE WHEN m.away_team_id = t.id THEN s.away_goals ELSE 0 END) as goalsScoredAway,
+    SUM(CASE WHEN m.home_team_id = t.id THEN s.away_goals ELSE s.home_goals END) as goalsConceded,
+    SUM(CASE WHEN m.home_team_id = t.id THEN s.away_goals ELSE 0 END) as goalsConcededHome,
+    SUM(CASE WHEN m.away_team_id = t.id THEN s.home_goals ELSE 0 END) as goalsConcededAway,
+    ROUND(AVG(CASE WHEN m.home_team_id = t.id THEN s.home_xg ELSE s.away_xg END), 2) as xG,
+    ROUND(AVG(CASE WHEN m.home_team_id = t.id THEN s.home_corners ELSE s.away_corners END), 2) as cornersWonAvg,
+    MAX(CASE WHEN m.home_team_id = t.id THEN s.home_corners ELSE s.away_corners END) as cornersWonHighest,
+    SUM(CASE WHEN 
+        (m.home_team_id = t.id AND s.home_goals > 0 AND s.away_goals > 0) OR 
+        (m.away_team_id = t.id AND s.home_goals > 0 AND s.away_goals > 0)
+        THEN 1 ELSE 0 END) as BTTS,
+    ROUND(AVG(CASE WHEN m.home_team_id = t.id THEN s.home_shots_on_target ELSE s.away_shots_on_target END), 2) as shotsOnTarget,
+    ROUND(AVG(CASE WHEN m.home_team_id = t.id THEN s.home_shots_on_target ELSE 0 END), 2) as shotsOnTargetHome,
+    ROUND(AVG(CASE WHEN m.away_team_id = t.id THEN s.away_shots_on_target ELSE 0 END), 2) as shotsOnTargetAway,
+    ROUND(AVG(CASE WHEN m.home_team_id = t.id THEN s.home_possession ELSE s.away_possession END), 2) as possessionAvg,
+    ROUND(AVG(CASE WHEN m.home_team_id = t.id THEN s.home_possession ELSE 0 END), 2) as possessionHome,
+    ROUND(AVG(CASE WHEN m.away_team_id = t.id THEN s.away_possession ELSE 0 END), 2) as possessionAway,
+    SUM(CASE WHEN 
+        (m.home_team_id = t.id AND s.away_goals = 0) OR 
+        (m.away_team_id = t.id AND s.home_goals = 0)
+        THEN 1 ELSE 0 END) as cleanSheets,
+    SUM(CASE WHEN m.home_team_id = t.id AND s.away_goals = 0 THEN 1 ELSE 0 END) as cleanSheetsHome,
+    SUM(CASE WHEN m.away_team_id = t.id AND s.home_goals = 0 THEN 1 ELSE 0 END) as cleanSheetsAway,
+    ROUND(
+        SUM(CASE WHEN m.home_team_id = t.id AND s.home_goals > s.away_goals THEN 3 
+                 WHEN m.home_team_id = t.id AND s.home_goals = s.away_goals THEN 1 
+                 ELSE 0 END) / 
+        NULLIF(COUNT(CASE WHEN m.home_team_id = t.id THEN 1 END), 0),
+        2
+    ) as ppgHome,
+    ROUND(
+        SUM(CASE WHEN m.away_team_id = t.id AND s.away_goals > s.home_goals THEN 3 
+                 WHEN m.away_team_id = t.id AND s.home_goals = s.away_goals THEN 1 
+                 ELSE 0 END) / 
+        NULLIF(COUNT(CASE WHEN m.away_team_id = t.id THEN 1 END), 0),
+        2
+    ) as ppgAway
+FROM league_teams t
+LEFT JOIN matches m ON t.id = m.home_team_id OR t.id = m.away_team_id
+LEFT JOIN match_stats s ON m.id = s.match_id
+WHERE m.status = 'complete'
+GROUP BY t.id, t.name
+ORDER BY points DESC;`;
+
+    return sequelize.query(query, {
+      type: QueryTypes.SELECT,
     });
   }
 

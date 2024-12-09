@@ -56,3 +56,26 @@ export async function getMatchesForJson(
     next(err);
   }
 }
+
+export async function getAggregateMatches(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const { year, league_name } = req.query;
+
+    if (typeof year !== "string" || typeof league_name !== "string") {
+      res.status(400).json({ error: "Invalid parameters" });
+      return;
+    }
+    const matchesService = new MatchesService();
+    const matches = await matchesService.aggregateMatches({
+      year,
+      league_name,
+    });
+    res.json(matches);
+  } catch (err) {
+    next(err);
+  }
+}

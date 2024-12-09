@@ -2,6 +2,7 @@ import Match from "./match";
 import MatchStats from "./match-stats";
 import MatchOdds from "./match-odds";
 import LeagueTeam from "./league-team";
+import Fixtures from "./fixtures";
 
 // Match associations
 Match.hasOne(MatchStats, {
