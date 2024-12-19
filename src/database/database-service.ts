@@ -547,4 +547,19 @@ ORDER BY points DESC;`;
       },
     });
   }
+
+  async getTeams(competitionId: number): Promise<any[]> {
+    try {
+      return LeagueTeam.findAll({
+        attributes: ["name", "table_position"],
+        where: {
+          competition_id: competitionId,
+        },
+        order: [["name", "DESC"]],
+      });
+    } catch (error) {
+      console.error("Error getting teams:", error);
+      return [];
+    }
+  }
 }

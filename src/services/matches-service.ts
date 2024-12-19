@@ -227,27 +227,53 @@ export class MatchesService {
     const competitionId = this.competitionIds[league_name]?.[year] || null;
     if (!competitionId) return [];
 
-    const matches = await this.dbService.getMatches({
-      competition_id: competitionId,
+    let overall: any = {};
+
+    const getTeams = await this.dbService.getTeams(competitionId);
+    let normalizedTeams = getTeams.map((team) => {
+      return {
+        name: NormalizedPlTeam[team.name as keyof typeof NormalizedPlTeam],
+        logo: NormalizedPlTeam[team.name as keyof typeof NormalizedPlTeam],
+        home_kits: `/api/images/home/${
+          NormalizedPlTeam[team.name as keyof typeof NormalizedPlTeam]
+        }.svg`,
+        away_kits: `/api/images/away/${
+          NormalizedPlTeam[team.name as keyof typeof NormalizedPlTeam]
+        }.svg`,
+        overall: {
+          position: team.table_position,
+        },
+      };
     });
 
-    const overAllStats = await this.dbService.getOverAllStats(competitionId);
+    console.log("🚀 ~ MatchesService ~ overall:", overall);
+    const data: any = {
+      teams: normalizedTeams,
+    };
 
-    // Get unique teams from matches
-    const uniqueTeams = new Set(
-      matches.map((m) => m.homeTeamId).concat(matches.map((m) => m.awayTeamId))
-    );
+    return data;
 
-    let matchesWithOverall: any[] = [];
-    matches.map((match) => {
-      if (match) {
-        // Check if match is defined
-        const overallStats = overAllStats.find(
-          (stat) => stat.id === match.homeTeamId
-        );
-        matchesWithOverall.push({ ...match, overallStats });
-      }
-    });
-    return matchesWithOverall;
+    // const matches = await this.dbService.getMatches({
+    //   competition_id: competitionId,
+    // });
+
+    // const overAllStats = await this.dbService.getOverAllStats(competitionId);
+
+    // // Get unique teams from matches
+    // const uniqueTeams = new Set(
+    //   matches.map((m) => m.homeTeamId).concat(matches.map((m) => m.awayTeamId))
+    // );
+
+    // let matchesWithOverall: any[] = [];
+    // matches.map((match) => {
+    //   if (match) {
+    //     // Check if match is defined
+    //     const overall = overAllStats.find(
+    //       (stat) => stat.id === match.homeTeamId
+    //     );
+    //     matchesWithOverall.push({ ...match, overall });
+    //   }
+    // });
+    // return matchesWithOverall;
   }
 }
