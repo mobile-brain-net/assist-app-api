@@ -260,9 +260,9 @@ export class MatchesService {
           goalsConceded: parseInt(teamStats.goalsConceded),
           goalsConcededHome: parseInt(teamStats.goalsConcededHome),
           goalsConcededAway: parseInt(teamStats.goalsConcededAway),
-          chance2score: "TO FIX",
-          chance2scoreHome: "TO FIX",
-          chance2scoreAway: "TO FIX",
+          chance2score: this.chance2score(teamStats),
+          chance2scoreHome: this.chance2scoreHome(teamStats),
+          chance2scoreAway: this.chance2scoreAway(teamStats),
           cornersWonAvg: parseFloat(teamStats.cornersWonAvg),
           "cornersWonOver1.5": "TO FIX",
           cornersWonHighest: "TO FIX",
@@ -271,7 +271,7 @@ export class MatchesService {
           "BTTSOver1.5": null,
           BTTSHighest: null,
           xG: parseFloat(teamStats.xG),
-          dxG: "TO FIX",
+          dxG: parseFloat(teamStats.dxG),
           shotsTaken: "TO FIX",
           shotsTakenFirstHalf: null,
           shotsTakenSecondHalf: null,
@@ -313,4 +313,31 @@ export class MatchesService {
     // });
     // return matchesWithOverall;
   }
+
+  private chance2score = (teamStats: any): number => {
+    const xg = parseFloat(teamStats.xG);
+    const dxg = parseFloat(teamStats.dxG);
+
+    if (xg === 0 || isNaN(xg) || isNaN(dxg)) return 0;
+
+    const result = Number(((xg + dxg) / xg).toFixed(2));
+    return result;
+  };
+
+  private chance2scoreHome = (teamStats: any): number => {
+    const homeXg = parseFloat(teamStats.homeXg);
+    const homeOpponentXg = parseFloat(teamStats.awayXg);
+
+    if (homeXg === 0 || isNaN(homeXg) || isNaN(homeOpponentXg)) return 0;
+
+    const result = Number(((homeXg + homeOpponentXg) / homeXg).toFixed(2));
+    return result;
+  };
+
+  private chance2scoreAway = (teamStats: any): number => {
+    const awayXg = parseFloat(teamStats.awayXg);
+    const awayOpponentXg = parseFloat(teamStats.homeXg);
+    const result = Number(((awayXg + awayOpponentXg) / awayXg).toFixed(2));
+    return result;
+  };
 }

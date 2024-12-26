@@ -109,7 +109,10 @@ export class DatabaseService {
     SUM(CASE WHEN m.home_team_id = t.id THEN s.away_goals ELSE s.home_goals END) as goalsConceded,
     SUM(CASE WHEN m.home_team_id = t.id THEN s.away_goals ELSE 0 END) as goalsConcededHome,
     SUM(CASE WHEN m.away_team_id = t.id THEN s.home_goals ELSE 0 END) as goalsConcededAway,
-    ROUND(AVG(CASE WHEN m.home_team_id = t.id THEN s.home_xg ELSE s.away_xg END), 2) as xG,
+ROUND(SUM(CASE WHEN m.home_team_id = t.id THEN s.home_xg ELSE s.away_xg END), 2) as xG,
+ROUND(SUM(CASE WHEN m.home_team_id = t.id THEN s.away_xg ELSE s.home_xg END), 2) as dxG,
+ROUND(SUM(CASE WHEN m.home_team_id = t.id THEN s.home_xg ELSE 0 END), 2) as homeXg,
+ROUND(SUM(CASE WHEN m.away_team_id = t.id THEN s.away_xg ELSE 0 END), 2) as awayXg,
     ROUND(AVG(CASE WHEN m.home_team_id = t.id THEN s.home_corners ELSE s.away_corners END), 2) as cornersWonAvg,
     MAX(CASE WHEN m.home_team_id = t.id THEN s.home_corners ELSE s.away_corners END) as cornersWonHighest,
     SUM(CASE WHEN 
