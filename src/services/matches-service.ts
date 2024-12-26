@@ -230,8 +230,11 @@ export class MatchesService {
     let overall: any = {};
 
     const getTeams = await this.dbService.getTeams(competitionId);
-    console.log("🚀 ~ MatchesService ~ getTeams:", getTeams);
+    const overAllStats = await this.dbService.getOverAllStats(competitionId);
+    console.log("🚀 ~ MatchesService ~ overAllStats:", overAllStats);
+
     let normalizedTeams = getTeams.map((team) => {
+      const teamStats = overAllStats.find((s) => s.id === team.id);
       return {
         name: NormalizedPlTeam[team.name as keyof typeof NormalizedPlTeam],
         logo: NormalizedPlTeam[team.name as keyof typeof NormalizedPlTeam],
@@ -243,7 +246,17 @@ export class MatchesService {
         }.svg`,
         overall: {
           position: team.table_position,
-          matchesPlayed: 243,
+          matchesPlayed:
+            parseInt(teamStats.wins) +
+            parseInt(teamStats.draws) +
+            parseInt(teamStats.losses),
+          wins: parseInt(teamStats.wins),
+          draws: parseInt(teamStats.draws),
+          losses: parseInt(teamStats.losses),
+          // goalsFor: parseInt(teamStats.goals_for),
+          // goalsAgainst: parseInt(teamStats.goals_against),
+          // goalDifference: parseInt(teamStats.goal_difference),
+          // points: parseInt(teamStats.points),
         },
       };
     });
