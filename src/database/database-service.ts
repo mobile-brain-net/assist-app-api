@@ -88,6 +88,12 @@ export class DatabaseService {
     t.id,
     t.name,
     COUNT(DISTINCT m.id) as matchesPlayed,
+ AVG(CASE WHEN m.home_team_id = t.id THEN s.home_shots_on_target ELSE s.away_shots_on_target END) AS shotsTaken,
+AVG(CASE WHEN m.home_team_id = t.id THEN s.away_shots_on_target ELSE s.home_shots_on_target END) AS shotsConceded,
+AVG(CASE WHEN m.home_team_id = t.id THEN s.home_shots_on_target ELSE 0 END) AS shotsTakenHome,
+AVG(CASE WHEN m.away_team_id = t.id THEN s.away_shots_on_target ELSE 0 END) AS shotsTakenAway,
+AVG(CASE WHEN m.home_team_id = t.id THEN s.away_shots_on_target ELSE 0 END) AS shotsConcededHome, 
+AVG(CASE WHEN m.away_team_id = t.id THEN s.home_shots_on_target ELSE 0 END) AS shotsConcededAway, 
     SUM(CASE WHEN 
         (m.home_team_id = t.id AND s.home_goals > s.away_goals) OR 
         (m.away_team_id = t.id AND s.away_goals > s.home_goals)
@@ -145,6 +151,7 @@ ROUND(SUM(CASE WHEN m.away_team_id = t.id THEN s.away_xg ELSE 0 END), 2) as away
         NULLIF(COUNT(CASE WHEN m.away_team_id = t.id THEN 1 END), 0),
         2
     ) as ppgAway
+    
 FROM league_teams t
 LEFT JOIN matches m ON t.id = m.home_team_id OR t.id = m.away_team_id
 LEFT JOIN match_stats s ON m.id = s.match_id
