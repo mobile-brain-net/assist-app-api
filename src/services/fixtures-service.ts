@@ -17,7 +17,7 @@ export class FixturesService {
   async fetchAndSaveFixtures(): Promise<Fixture[]> {
     const season = dayjs().year();
     const from = dayjs().subtract(30, "day").format("YYYY-MM-DD");
-    const to = dayjs().format("YYYY-MM-DD");
+    const to = dayjs().add(30, "day").format("YYYY-MM-DD");
     const premierLeagueId = 39; // Premier League ID
     const requestUrl = `https://v3.football.api-sports.io/fixtures?league=${premierLeagueId}&season=${season}&from=${from}&to=${to}`;
     const headers = {

@@ -157,12 +157,6 @@ ORDER BY points DESC;`;
   async saveMatches(matches: any[]): Promise<void> {
     try {
       for (const match of matches) {
-        // First check if match exists
-        const existingMatch = await Match.findByPk(match.id);
-        if (existingMatch) {
-          continue; // Skip if exists
-        }
-
         // Validate required fields
         if (!match.id || !match.homeID || !match.awayID) {
           console.warn(`Skipping match due to missing required fields:`, match);
@@ -179,26 +173,24 @@ ORDER BY points DESC;`;
           continue;
         }
 
-        // Create match with transaction
-        await sequelize.transaction(async (t) => {
-          const createdMatch = await Match.create(
-            {
-              id: match.id,
-              homeTeamId: match.homeID,
-              awayTeamId: match.awayID,
-              season: match.season,
-              status: match.status,
-              date_unix: match.date_unix,
-              competition_id: match.competition_id,
-              stadium_name: match.stadium_name,
-              attendance: match.attendance,
-              referee_id: match.refereeID,
-            },
-            { transaction: t }
-          );
+        const existingMatch = await Match.findByPk(match.id);
 
-          if (match.homeGoalCount !== undefined) {
-            await MatchStats.create(
+        await sequelize.transaction(async (t) => {
+          if (existingMatch) {
+            // Update existing match
+            await Match.update(
+              {
+                status: match.status,
+                date_unix: match.date_unix,
+                stadium_name: match.stadium_name,
+                attendance: match.attendance,
+                referee_id: match.refereeID,
+              },
+              { where: { id: match.id }, transaction: t }
+            );
+
+            // Update match stats
+            await MatchStats.upsert(
               {
                 match_id: match.id,
                 home_goals: match.homeGoalCount,
@@ -214,10 +206,9 @@ ORDER BY points DESC;`;
               },
               { transaction: t }
             );
-          }
 
-          if (match.odds_ft_1 !== undefined) {
-            await MatchOdds.create(
+            // Update match odds
+            await MatchOdds.upsert(
               {
                 match_id: match.id,
                 odds_ft_1: match.odds_ft_1,
@@ -230,6 +221,58 @@ ORDER BY points DESC;`;
               },
               { transaction: t }
             );
+          } else {
+            // Create new match
+            await Match.create(
+              {
+                id: match.id,
+                homeTeamId: match.homeID,
+                awayTeamId: match.awayID,
+                season: match.season,
+                status: match.status,
+                date_unix: match.date_unix,
+                competition_id: match.competition_id,
+                stadium_name: match.stadium_name,
+                attendance: match.attendance,
+                referee_id: match.refereeID,
+              },
+              { transaction: t }
+            );
+
+            if (match.homeGoalCount !== undefined) {
+              await MatchStats.create(
+                {
+                  match_id: match.id,
+                  home_goals: match.homeGoalCount,
+                  away_goals: match.awayGoalCount,
+                  home_corners: match.team_a_corners,
+                  away_corners: match.team_b_corners,
+                  home_shots_on_target: match.team_a_shotsOnTarget,
+                  away_shots_on_target: match.team_b_shotsOnTarget,
+                  home_possession: match.team_a_possession,
+                  away_possession: match.team_b_possession,
+                  home_xg: match.team_a_xg,
+                  away_xg: match.team_b_xg,
+                },
+                { transaction: t }
+              );
+            }
+
+            if (match.odds_ft_1 !== undefined) {
+              await MatchOdds.create(
+                {
+                  match_id: match.id,
+                  odds_ft_1: match.odds_ft_1,
+                  odds_ft_x: match.odds_ft_x,
+                  odds_ft_2: match.odds_ft_2,
+                  odds_btts_yes: match.odds_btts_yes,
+                  odds_btts_no: match.odds_btts_no,
+                  odds_over25: match.odds_ft_over25,
+                  odds_under25: match.odds_ft_under25,
+                },
+                { transaction: t }
+              );
+            }
           }
         });
       }

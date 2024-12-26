@@ -37,7 +37,7 @@ export class MatchesService {
     const premierLeagueId = 12325;
     try {
       const requestUrl = `https://api.football-data-api.com/league-matches?key=${process.env.FOOTBALL_DATA_API_KEY}&league_id=${premierLeagueId}`;
-      console.log(requestUrl);
+
       const response = await axios.get(requestUrl);
       const matches = response.data.data;
       await this.dbService.saveMatches(matches);
@@ -230,6 +230,7 @@ export class MatchesService {
     let overall: any = {};
 
     const getTeams = await this.dbService.getTeams(competitionId);
+    console.log("🚀 ~ MatchesService ~ getTeams:", getTeams);
     let normalizedTeams = getTeams.map((team) => {
       return {
         name: NormalizedPlTeam[team.name as keyof typeof NormalizedPlTeam],
@@ -242,6 +243,7 @@ export class MatchesService {
         }.svg`,
         overall: {
           position: team.table_position,
+          matchesPlayed: 243,
         },
       };
     });
@@ -249,6 +251,7 @@ export class MatchesService {
     console.log("🚀 ~ MatchesService ~ overall:", overall);
     const data: any = {
       teams: normalizedTeams,
+      overall,
     };
 
     return data;
