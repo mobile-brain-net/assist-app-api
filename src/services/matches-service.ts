@@ -231,7 +231,6 @@ export class MatchesService {
 
     const getTeams = await this.dbService.getTeams(competitionId);
     const overAllStats = await this.dbService.getOverAllStats(competitionId);
-    console.log("🚀 ~ MatchesService ~ overAllStats:", overAllStats);
 
     let normalizedTeams = getTeams.map((team) => {
       const teamStats = overAllStats.find((s) => s.id === team.id);
@@ -278,6 +277,26 @@ export class MatchesService {
           shotsConceded: parseFloat(teamStats.shotsConceded),
           shotsConcededFirstHalf: null,
           shotsConcededSecondHalf: null,
+          shotsCR: teamStats.shotsConceded / teamStats.goalsScored,
+          shotsConcededCR: teamStats.shotsTaken / teamStats.goalsScored,
+          shotsOnTarget: parseFloat(teamStats.shotsOnTarget),
+          shotsOnTargetHome: parseFloat(teamStats.shotsOnTargetHome),
+          shotsOnTargetAway: parseFloat(teamStats.shotsOnTargetAway),
+          possessionAvg: parseFloat(teamStats.possessionAvg),
+          possessionAvgHome: parseFloat(teamStats.possessionHome),
+          possessionAvgAway: parseFloat(teamStats.possessionAway),
+          cleanSheets: parseInt(teamStats.cleanSheets),
+          cleanSheetsHome: parseInt(teamStats.cleanSheetsHome),
+          cleanSheetsAway: parseInt(teamStats.cleanSheetsAway),
+          totalFoulsCommitted: parseInt(teamStats.totalFoulsCommitted),
+          totalFoulsCommittedAgainst: parseInt(
+            teamStats.totalFoulsCommittedAgainst
+          ),
+          dangerousAttacks: parseInt(teamStats.dangerousAttacks),
+          dangerousAttacksHome: parseInt(teamStats.dangerousAttacksHome),
+          dangerousAttacksAway: parseInt(teamStats.dangerousAttacksAway),
+          ppgHome: parseFloat(teamStats.ppgHome),
+          ppgAway: parseFloat(teamStats.ppgAway),
         },
       };
     });

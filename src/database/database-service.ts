@@ -87,7 +87,7 @@ export class DatabaseService {
     const query = `SELECT 
     t.id,
     t.name,
-    COUNT(DISTINCT m.id) as matchesPlayed,
+    COUNT(DISTINCT m.id) AS matchesPlayed,
  AVG(CASE WHEN m.home_team_id = t.id THEN s.home_shots_on_target ELSE s.away_shots_on_target END) AS shotsTaken,
 AVG(CASE WHEN m.home_team_id = t.id THEN s.away_shots_on_target ELSE s.home_shots_on_target END) AS shotsConceded,
 AVG(CASE WHEN m.home_team_id = t.id THEN s.home_shots_on_target ELSE 0 END) AS shotsTakenHome,
@@ -97,60 +97,71 @@ AVG(CASE WHEN m.away_team_id = t.id THEN s.home_shots_on_target ELSE 0 END) AS s
     SUM(CASE WHEN 
         (m.home_team_id = t.id AND s.home_goals > s.away_goals) OR 
         (m.away_team_id = t.id AND s.away_goals > s.home_goals)
-        THEN 1 ELSE 0 END) as wins,
-    SUM(CASE WHEN s.home_goals = s.away_goals THEN 1 ELSE 0 END) as draws,
+        THEN 1 ELSE 0 END) AS wins,
+    SUM(CASE WHEN s.home_goals = s.away_goals THEN 1 ELSE 0 END) AS draws,
     SUM(CASE WHEN 
         (m.home_team_id = t.id AND s.home_goals < s.away_goals) OR 
         (m.away_team_id = t.id AND s.away_goals < s.home_goals)
-        THEN 1 ELSE 0 END) as losses,
+        THEN 1 ELSE 0 END) AS losses,
     (SUM(CASE WHEN 
         (m.home_team_id = t.id AND s.home_goals > s.away_goals) OR 
         (m.away_team_id = t.id AND s.away_goals > s.home_goals)
         THEN 3 
         WHEN s.home_goals = s.away_goals THEN 1
-        ELSE 0 END)) as points,
-    SUM(CASE WHEN m.home_team_id = t.id THEN s.home_goals ELSE s.away_goals END) as goalsScored,
-    SUM(CASE WHEN m.home_team_id = t.id THEN s.home_goals ELSE 0 END) as goalsScoredHome,
-    SUM(CASE WHEN m.away_team_id = t.id THEN s.away_goals ELSE 0 END) as goalsScoredAway,
-    SUM(CASE WHEN m.home_team_id = t.id THEN s.away_goals ELSE s.home_goals END) as goalsConceded,
-    SUM(CASE WHEN m.home_team_id = t.id THEN s.away_goals ELSE 0 END) as goalsConcededHome,
-    SUM(CASE WHEN m.away_team_id = t.id THEN s.home_goals ELSE 0 END) as goalsConcededAway,
-ROUND(SUM(CASE WHEN m.home_team_id = t.id THEN s.home_xg ELSE s.away_xg END), 2) as xG,
-ROUND(SUM(CASE WHEN m.home_team_id = t.id THEN s.away_xg ELSE s.home_xg END), 2) as dxG,
-ROUND(SUM(CASE WHEN m.home_team_id = t.id THEN s.home_xg ELSE 0 END), 2) as homeXg,
-ROUND(SUM(CASE WHEN m.away_team_id = t.id THEN s.away_xg ELSE 0 END), 2) as awayXg,
-    ROUND(AVG(CASE WHEN m.home_team_id = t.id THEN s.home_corners ELSE s.away_corners END), 2) as cornersWonAvg,
-    MAX(CASE WHEN m.home_team_id = t.id THEN s.home_corners ELSE s.away_corners END) as cornersWonHighest,
+        ELSE 0 END)) AS points,
+    SUM(CASE WHEN m.home_team_id = t.id THEN s.home_goals ELSE s.away_goals END) AS goalsScored,
+    SUM(CASE WHEN m.home_team_id = t.id THEN s.home_goals ELSE 0 END) AS goalsScoredHome,
+    SUM(CASE WHEN m.away_team_id = t.id THEN s.away_goals ELSE 0 END) AS goalsScoredAway,
+    SUM(CASE WHEN m.home_team_id = t.id THEN s.away_goals ELSE s.home_goals END) AS goalsConceded,
+    SUM(CASE WHEN m.home_team_id = t.id THEN s.away_goals ELSE 0 END) AS goalsConcededHome,
+    SUM(CASE WHEN m.away_team_id = t.id THEN s.home_goals ELSE 0 END) AS goalsConcededAway,
+ROUND(SUM(CASE WHEN m.home_team_id = t.id THEN s.home_xg ELSE s.away_xg END), 2) AS xG,
+ROUND(SUM(CASE WHEN m.home_team_id = t.id THEN s.away_xg ELSE s.home_xg END), 2) AS dxG,
+ROUND(SUM(CASE WHEN m.home_team_id = t.id THEN s.home_xg ELSE 0 END), 2) AS homeXg,
+ROUND(SUM(CASE WHEN m.away_team_id = t.id THEN s.away_xg ELSE 0 END), 2) AS awayXg,
+    ROUND(AVG(CASE WHEN m.home_team_id = t.id THEN s.home_corners ELSE s.away_corners END), 2) AS cornersWonAvg,
+    MAX(CASE WHEN m.home_team_id = t.id THEN s.home_corners ELSE s.away_corners END) AS cornersWonHighest,
     SUM(CASE WHEN 
         (m.home_team_id = t.id AND s.home_goals > 0 AND s.away_goals > 0) OR 
         (m.away_team_id = t.id AND s.home_goals > 0 AND s.away_goals > 0)
-        THEN 1 ELSE 0 END) as BTTS,
-    ROUND(AVG(CASE WHEN m.home_team_id = t.id THEN s.home_shots_on_target ELSE s.away_shots_on_target END), 2) as shotsOnTarget,
-    ROUND(AVG(CASE WHEN m.home_team_id = t.id THEN s.home_shots_on_target ELSE 0 END), 2) as shotsOnTargetHome,
-    ROUND(AVG(CASE WHEN m.away_team_id = t.id THEN s.away_shots_on_target ELSE 0 END), 2) as shotsOnTargetAway,
-    ROUND(AVG(CASE WHEN m.home_team_id = t.id THEN s.home_possession ELSE s.away_possession END), 2) as possessionAvg,
-    ROUND(AVG(CASE WHEN m.home_team_id = t.id THEN s.home_possession ELSE 0 END), 2) as possessionHome,
-    ROUND(AVG(CASE WHEN m.away_team_id = t.id THEN s.away_possession ELSE 0 END), 2) as possessionAway,
+        THEN 1 ELSE 0 END) AS BTTS,
+    ROUND(AVG(CASE WHEN m.home_team_id = t.id THEN s.home_shots_on_target ELSE s.away_shots_on_target END), 2) AS shotsOnTarget,
+    ROUND(AVG(CASE WHEN m.home_team_id = t.id THEN s.home_shots_on_target ELSE 0 END), 2) AS shotsOnTargetHome,
+    ROUND(AVG(CASE WHEN m.away_team_id = t.id THEN s.away_shots_on_target ELSE 0 END), 2) AS shotsOnTargetAway,
+    ROUND(AVG(CASE WHEN m.home_team_id = t.id THEN s.home_possession ELSE s.away_possession END), 2) AS possessionAvg,
+    ROUND(AVG(CASE WHEN m.home_team_id = t.id THEN s.home_possession ELSE 0 END), 2) AS possessionHome,
+    ROUND(AVG(CASE WHEN m.away_team_id = t.id THEN s.away_possession ELSE 0 END), 2) AS possessionAway,
     SUM(CASE WHEN 
         (m.home_team_id = t.id AND s.away_goals = 0) OR 
         (m.away_team_id = t.id AND s.home_goals = 0)
-        THEN 1 ELSE 0 END) as cleanSheets,
-    SUM(CASE WHEN m.home_team_id = t.id AND s.away_goals = 0 THEN 1 ELSE 0 END) as cleanSheetsHome,
-    SUM(CASE WHEN m.away_team_id = t.id AND s.home_goals = 0 THEN 1 ELSE 0 END) as cleanSheetsAway,
+        THEN 1 ELSE 0 END) AS cleanSheets,
+    SUM(CASE WHEN m.home_team_id = t.id AND s.away_goals = 0 THEN 1 ELSE 0 END) AS cleanSheetsHome,
+    SUM(CASE WHEN m.away_team_id = t.id AND s.home_goals = 0 THEN 1 ELSE 0 END) AS cleanSheetsAway,
     ROUND(
         SUM(CASE WHEN m.home_team_id = t.id AND s.home_goals > s.away_goals THEN 3 
                  WHEN m.home_team_id = t.id AND s.home_goals = s.away_goals THEN 1 
                  ELSE 0 END) / 
         NULLIF(COUNT(CASE WHEN m.home_team_id = t.id THEN 1 END), 0),
         2
-    ) as ppgHome,
+    ) AS ppgHome,
     ROUND(
         SUM(CASE WHEN m.away_team_id = t.id AND s.away_goals > s.home_goals THEN 3 
                  WHEN m.away_team_id = t.id AND s.home_goals = s.away_goals THEN 1 
                  ELSE 0 END) / 
         NULLIF(COUNT(CASE WHEN m.away_team_id = t.id THEN 1 END), 0),
         2
-    ) as ppgAway
+    ) AS ppgAway,
+        SUM(CASE WHEN m.home_team_id = t.id THEN s.home_fouls 
+             WHEN m.away_team_id = t.id THEN s.away_fouls 
+             ELSE 0 END) AS totalFoulsCommitted,
+    SUM(CASE WHEN m.home_team_id = t.id THEN s.away_fouls 
+             WHEN m.away_team_id = t.id THEN s.home_fouls 
+             ELSE 0 END) AS totalFoulsCommittedAgainst,
+    SUM(CASE WHEN m.home_team_id = t.id THEN s.home_dangerous_attacks 
+             WHEN m.away_team_id = t.id THEN s.away_dangerous_attacks 
+             ELSE 0 END) as dangerousAttacks,
+    SUM(CASE WHEN m.home_team_id = t.id THEN s.home_dangerous_attacks ELSE 0 END) as dangerousAttacksHome,
+    SUM(CASE WHEN m.away_team_id = t.id THEN s.away_dangerous_attacks ELSE 0 END) as dangerousAttacksAway
     
 FROM league_teams t
 LEFT JOIN matches m ON t.id = m.home_team_id OR t.id = m.away_team_id
@@ -213,6 +224,10 @@ ORDER BY points DESC;`;
                 away_possession: match.team_b_possession,
                 home_xg: match.team_a_xg,
                 away_xg: match.team_b_xg,
+                home_dangerous_attacks: match.team_a_dangerous_attacks,
+                away_dangerous_attacks: match.team_b_dangerous_attacks,
+                home_fouls: match.team_a_fouls,
+                away_fouls: match.team_b_fouls,
               },
               { transaction: t }
             );
@@ -263,6 +278,10 @@ ORDER BY points DESC;`;
                   away_possession: match.team_b_possession,
                   home_xg: match.team_a_xg,
                   away_xg: match.team_b_xg,
+                  home_fouls: match.team_a_fouls,
+                  away_fouls: match.team_b_fouls,
+                  home_dangerous_attacks: match.team_a_dangerous_attacks,
+                  away_dangerous_attacks: match.team_b_dangerous_attacks,
                 },
                 { transaction: t }
               );
