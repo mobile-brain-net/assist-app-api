@@ -227,13 +227,20 @@ export class MatchesService {
     const competitionId = this.competitionIds[league_name]?.[year] || null;
     if (!competitionId) return [];
 
-    let overall: any = {};
-
     const getTeams = await this.dbService.getTeams(competitionId);
     const overAllStats = await this.dbService.getOverAllStats(competitionId);
-
+    const last5Stats = await this.dbService.getLast5Stats(competitionId);
+    const last5HomeStats = await this.dbService.getLast5HomeStats(
+      competitionId
+    );
+    const last5AwayStats = await this.dbService.getLast5AwayStats(
+      competitionId
+    );
     let normalizedTeams = getTeams.map((team) => {
       const teamStats = overAllStats.find((s) => s.id === team.id);
+      const last5 = last5Stats.find((s) => s.id === team.id);
+      const last5Home = last5HomeStats.find((s) => s.id === team.id);
+      const last5Away = last5AwayStats.find((s) => s.id === team.id);
       return {
         name: NormalizedPlTeam[team.name as keyof typeof NormalizedPlTeam],
         logo: NormalizedPlTeam[team.name as keyof typeof NormalizedPlTeam],
@@ -298,13 +305,153 @@ export class MatchesService {
           ppgHome: parseFloat(teamStats.ppgHome),
           ppgAway: parseFloat(teamStats.ppgAway),
         },
+        last5: {
+          position: "TO FIX",
+          matchesPlayed: last5.matchesPlayed,
+          wins: parseInt(last5.wins),
+          draws: parseInt(last5.draws),
+          losses: parseInt(last5.losses),
+          points: parseInt(last5.points),
+          goalsScored: parseInt(last5.goalsScored),
+          goalsScoredHome: parseInt(last5.goalsScoredHome),
+          goalsScoredAway: parseInt(last5.goalsScoredAway),
+          goalsConceded: parseInt(last5.goalsConceded),
+          goalsConcededHome: parseInt(last5.goalsConcededHome),
+          goalsConcededAway: parseInt(last5.goalsConcededAway),
+          cornersWonAvg: parseFloat(last5.cornersWonAvg),
+          "cornersWonOver1.5": parseFloat(last5["cornersWonOver1.5"]),
+          cornersWonHighest: parseInt(last5.cornersWonHighest),
+          BTTS: parseFloat(last5.BTTS),
+          "BTTSOver0.5": parseFloat(last5["BTTSOver0.5"]),
+          "BTTSOver1.5": parseFloat(last5["BTTSOver1.5"]),
+          BTTSHighest: parseFloat(last5.BTTSHighest),
+          xG: parseFloat(last5.xG),
+          dxG: parseFloat(last5.dxG),
+          shotsTaken: parseFloat(last5.shotsTaken),
+          shotsConceded: parseFloat(last5.shotsConceded),
+          shotsTakenHome: parseFloat(last5.shotsTakenHome),
+          shotsTakenAway: parseFloat(last5.shotsTakenAway),
+          shotsConcededHome: parseFloat(last5.shotsConcededHome),
+          shotsConcededAway: parseFloat(last5.shotsConcededAway),
+          shotsOnTarget: parseFloat(last5.shotsOnTarget),
+          shotsOnTargetHome: parseFloat(last5.shotsOnTargetHome),
+          shotsOnTargetAway: parseFloat(last5.shotsOnTargetAway),
+          possessionAvg: parseFloat(last5.possessionAvg),
+          possessionAvgHome: parseFloat(last5.possessionAvgHome),
+          possessionAvgAway: parseFloat(last5.possessionAvgAway),
+          cleanSheets: parseInt(last5.cleanSheets),
+          cleanSheetsHome: parseInt(last5.cleanSheetsHome),
+          cleanSheetsAway: parseInt(last5.cleanSheetsAway),
+          totalFoulsCommitted: parseInt(last5.totalFoulsCommitted),
+          totalFoulsCommittedAgainst: parseInt(
+            last5.totalFoulsCommittedAgainst
+          ),
+          dangerousAttacks: parseInt(last5.dangerousAttacks),
+          dangerousAttacksHome: parseInt(last5.dangerousAttacksHome),
+          dangerousAttacksAway: parseInt(last5.dangerousAttacksAway),
+          ppgHome: parseFloat(last5.ppgHome),
+          ppgAway: parseFloat(last5.ppgAway),
+        },
+        last5Home: {
+          position: "TO FIX",
+          matchesPlayed: last5Home.matchesPlayed,
+          wins: parseInt(last5Home.wins),
+          draws: parseInt(last5Home.draws),
+          losses: parseInt(last5Home.losses),
+          points: parseInt(last5Home.points),
+          goalsScored: parseInt(last5Home.goalsScored),
+          goalsScoredHome: parseInt(last5Home.goalsScoredHome),
+          goalsScoredAway: parseInt(last5Home.goalsScoredAway),
+          goalsConceded: parseInt(last5Home.goalsConceded),
+          goalsConcededHome: parseInt(last5Home.goalsConcededHome),
+          goalsConcededAway: parseInt(last5Home.goalsConcededAway),
+          cornersWonAvg: parseFloat(last5Home.cornersWonAvg),
+          "cornersWonOver1.5": parseFloat(last5Home["cornersWonOver1.5"]),
+          cornersWonHighest: parseInt(last5Home.cornersWonHighest),
+          BTTS: parseFloat(last5Home.BTTS),
+          "BTTSOver0.5": parseFloat(last5Home["BTTSOver0.5"]),
+          "BTTSOver1.5": parseFloat(last5Home["BTTSOver1.5"]),
+          BTTSHighest: parseFloat(last5Home.BTTSHighest),
+          xG: parseFloat(last5Home.xG),
+          dxG: parseFloat(last5Home.dxG),
+          shotsTaken: parseFloat(last5Home.shotsTaken),
+          shotsConceded: parseFloat(last5Home.shotsConceded),
+          shotsTakenHome: parseFloat(last5Home.shotsTakenHome),
+          shotsTakenAway: parseFloat(last5Home.shotsTakenAway),
+          shotsConcededHome: parseFloat(last5Home.shotsConcededHome),
+          shotsConcededAway: parseFloat(last5Home.shotsConcededAway),
+          shotsOnTarget: parseFloat(last5Home.shotsOnTarget),
+          shotsOnTargetHome: parseFloat(last5Home.shotsOnTargetHome),
+          shotsOnTargetAway: parseFloat(last5Home.shotsOnTargetAway),
+          possessionAvg: parseFloat(last5Home.possessionAvg),
+          possessionAvgHome: parseFloat(last5Home.possessionAvgHome),
+          possessionAvgAway: parseFloat(last5Home.possessionAvgAway),
+          cleanSheets: parseInt(last5Home.cleanSheets),
+          cleanSheetsHome: parseInt(last5Home.cleanSheetsHome),
+          cleanSheetsAway: parseInt(last5Home.cleanSheetsAway),
+          totalFoulsCommitted: parseInt(last5Home.totalFoulsCommitted),
+          totalFoulsCommittedAgainst: parseInt(
+            last5Home.totalFoulsCommittedAgainst
+          ),
+          dangerousAttacks: parseInt(last5Home.dangerousAttacks),
+          dangerousAttacksHome: parseInt(last5Home.dangerousAttacksHome),
+          dangerousAttacksAway: parseInt(last5Home.dangerousAttacksAway),
+          ppgHome: parseFloat(last5Home.ppgHome),
+          ppgAway: parseFloat(last5Home.ppgAway),
+        },
+        last5Away: {
+          position: "TO FIX",
+          matchesPlayed: last5Away.matchesPlayed,
+          wins: parseInt(last5Away.wins),
+          draws: parseInt(last5Away.draws),
+          losses: parseInt(last5Away.losses),
+          points: parseInt(last5Away.points),
+          goalsScored: parseInt(last5Away.goalsScored),
+          goalsScoredHome: parseInt(last5Away.goalsScoredHome),
+          goalsScoredAway: parseInt(last5Away.goalsScoredAway),
+          goalsConceded: parseInt(last5Away.goalsConceded),
+          goalsConcededHome: parseInt(last5Away.goalsConcededHome),
+          goalsConcededAway: parseInt(last5Away.goalsConcededAway),
+          cornersWonAvg: parseFloat(last5Away.cornersWonAvg),
+          "cornersWonOver1.5": parseFloat(last5Away["cornersWonOver1.5"]),
+          cornersWonHighest: parseInt(last5Away.cornersWonHighest),
+          BTTS: parseFloat(last5Away.BTTS),
+          "BTTSOver0.5": parseFloat(last5Away["BTTSOver0.5"]),
+          "BTTSOver1.5": parseFloat(last5Away["BTTSOver1.5"]),
+          BTTSHighest: parseFloat(last5Away.BTTSHighest),
+          xG: parseFloat(last5Away.xG),
+          dxG: parseFloat(last5Away.dxG),
+          shotsTaken: parseFloat(last5Away.shotsTaken),
+          shotsConceded: parseFloat(last5Away.shotsConceded),
+          shotsTakenHome: parseFloat(last5Away.shotsTakenHome),
+          shotsTakenAway: parseFloat(last5Away.shotsTakenAway),
+          shotsConcededHome: parseFloat(last5Away.shotsConcededHome),
+          shotsConcededAway: parseFloat(last5Away.shotsConcededAway),
+          shotsOnTarget: parseFloat(last5Away.shotsOnTarget),
+          shotsOnTargetHome: parseFloat(last5Away.shotsOnTargetHome),
+          shotsOnTargetAway: parseFloat(last5Away.shotsOnTargetAway),
+          possessionAvg: parseFloat(last5Away.possessionAvg),
+          possessionAvgHome: parseFloat(last5Away.possessionAvgHome),
+          possessionAvgAway: parseFloat(last5Away.possessionAvgAway),
+          cleanSheets: parseInt(last5Away.cleanSheets),
+          cleanSheetsHome: parseInt(last5Away.cleanSheetsHome),
+          cleanSheetsAway: parseInt(last5Away.cleanSheetsAway),
+          totalFoulsCommitted: parseInt(last5Away.totalFoulsCommitted),
+          totalFoulsCommittedAgainst: parseInt(
+            last5Away.totalFoulsCommittedAgainst
+          ),
+          dangerousAttacks: parseInt(last5Away.dangerousAttacks),
+          dangerousAttacksHome: parseInt(last5Away.dangerousAttacksHome),
+          dangerousAttacksAway: parseInt(last5Away.dangerousAttacksAway),
+          ppgHome: parseFloat(last5Away.ppgHome),
+          ppgAway: parseFloat(last5Away.ppgAway),
+        },
       };
     });
 
-    console.log("🚀 ~ MatchesService ~ overall:", overall);
     const data: any = {
       teams: normalizedTeams,
-      overall,
+      // overall,
     };
 
     return data;
