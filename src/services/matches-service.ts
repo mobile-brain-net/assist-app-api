@@ -260,20 +260,65 @@ export class MatchesService {
             })),
           }))
     );
-    const allFixtures: any[] = await Promise.all(fixturesPromises);
+
+    const fixturesHomePromises: Promise<TeamFixtureResponse>[] = getTeams.map(
+      (team: TeamData) =>
+        this.dbService
+          .getFixturesForTeamHome(
+            this.leagueIdMap["Premier League"],
+            TeamsForFixtures[
+              team.dataValues.name as keyof typeof TeamsForFixtures
+            ]
+          )
+          .then((fixtures) => ({
+            teamName:
+              TeamsForFixtures[
+                team.dataValues.name as keyof typeof TeamsForFixtures
+              ],
+            fixtures: fixtures.map((f) => ({
+              result: f.result,
+              score: f.score,
+              against: f.against,
+              datetime: f.datetime,
+            })),
+          }))
+    );
+
+    const fixturesAwayPromises: Promise<TeamFixtureResponse>[] = getTeams.map(
+      (team: TeamData) =>
+        this.dbService
+          .getFixturesForTeamAway(
+            this.leagueIdMap["Premier League"],
+            TeamsForFixtures[
+              team.dataValues.name as keyof typeof TeamsForFixtures
+            ]
+          )
+          .then((fixtures) => ({
+            teamName:
+              TeamsForFixtures[
+                team.dataValues.name as keyof typeof TeamsForFixtures
+              ],
+            fixtures: fixtures.map((f) => ({
+              result: f.result,
+              score: f.score,
+              against: f.against,
+              datetime: f.datetime,
+            })),
+          }))
+    );
+
+    const allFixtures: TeamFixtureResponse[] = await Promise.all(
+      fixturesPromises
+    );
+    const allFixturesHome: TeamFixtureResponse[] = await Promise.all(
+      fixturesHomePromises
+    );
+    const allFixturesAway: TeamFixtureResponse[] = await Promise.all(
+      fixturesAwayPromises
+    );
 
     let normalizedTeams = getTeams.map((team: TeamData) => {
       const tablePosition = team.table_position;
-      const fixtures = allFixtures.find(
-        (f: any) =>
-          f.teamName ===
-          TeamsForFixtures[team.name as keyof typeof TeamsForFixtures]
-      );
-      console.log(
-        "🚀 ~ MatchesService ~ normalizedTeams ~ fixtures:",
-        fixtures
-      );
-
       const teamStats = overAllStats.find((s: TeamStats) => s.id === team.id);
       const last5 = last5Stats.find((s: TeamStats) => s.id === team.id);
       const last5Home = last5HomeStats.find((s: TeamStats) => s.id === team.id);
@@ -283,14 +328,18 @@ export class MatchesService {
           TeamsForFixtures[
             team.dataValues.name as keyof typeof TeamsForFixtures
           ];
-        // console.log("Debug:", {
-        //   teamFromDB: team.dataValues.name,
-        //   mappedTeamName: teamKey,
-        //   allFixtures: allFixtures,
-        //   fixtureTeamNames: allFixtures.map((f) => f.teamName),
-        // });
         return f.teamName === teamKey;
       });
+      const last5FixturesHome = allFixturesHome.find(
+        (f: TeamFixtureResponse) =>
+          f.teamName ===
+          TeamsForFixtures[team.name as keyof typeof TeamsForFixtures]
+      );
+      const last5FixturesAway = allFixturesAway.find(
+        (f: TeamFixtureResponse) =>
+          f.teamName ===
+          TeamsForFixtures[team.name as keyof typeof TeamsForFixtures]
+      );
 
       if (!teamStats || !last5 || !last5Home || !last5Away) {
         throw new Error(`Missing stats for team ${team.name}`);
@@ -305,14 +354,10 @@ export class MatchesService {
         away_kits: `/api/images/away/${
           NormalizedPlTeam[team.name as keyof typeof NormalizedPlTeam]
         }.svg`,
-        overall: this.mapStatsSection(
-          teamStats,
-          last5FixturesTotal,
-          tablePosition
-        ),
+        overall: this.mapStatsSection(teamStats, undefined, tablePosition),
         last5: this.mapStatsSection(last5, last5FixturesTotal, null),
-        last5Home: this.mapStatsSection(last5Home, undefined, null),
-        last5Away: this.mapStatsSection(last5Away, undefined, null),
+        last5Home: this.mapStatsSection(last5Home, last5FixturesHome, null),
+        last5Away: this.mapStatsSection(last5Away, last5FixturesAway, null),
       };
     });
 
