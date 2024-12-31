@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { MatchesService } from "../services/matches-service";
+import { StatsSection } from "../types/stats";
 
 export async function getMatches(
   req: Request,

@@ -112,4 +112,9 @@ export interface TeamData {
   id: number;
   name: string;
   table_position: number;
+  dataValues: {
+    id: number;
+    name: string;
+    table_position: number;
+  };
 }

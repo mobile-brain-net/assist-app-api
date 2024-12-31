@@ -16,6 +16,7 @@ import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import { PredictionsService } from "./predictions-service";
 import Prediction from "../models/predictions";
+import { TeamFixture, TeamFixtureResponse } from "../types/fixtures";
 
 // Define the Prediction type based on the Prediction model
 type PredictionType = Omit<Prediction, "id" | "createdAt" | "updatedAt">; // Exclude any auto-generated fields if necessary
@@ -228,7 +229,6 @@ export class MatchesService {
     if (!competitionId) return [];
 
     const getTeams = await this.dbService.getTeams(competitionId);
-    console.log("🚀 ~ MatchesService ~ getTeams:", getTeams);
     const overAllStats = await this.dbService.getOverAllStats(competitionId);
     const last5Stats = await this.dbService.getLast5Stats(competitionId);
     const last5HomeStats = await this.dbService.getLast5HomeStats(
@@ -238,26 +238,59 @@ export class MatchesService {
       competitionId
     );
 
-    const getFixtures = await Promise.all(
-      getTeams.map((team: TeamData) =>
-        this.dbService.getFixturesForTeam(
-          this.leagueIdMap["Premier League"],
-          TeamsForFixtures[team.name as keyof typeof TeamsForFixtures]
-        )
-      )
+    const fixturesPromises: Promise<TeamFixtureResponse>[] = getTeams.map(
+      (team: TeamData) =>
+        this.dbService
+          .getFixturesForTeam(
+            this.leagueIdMap["Premier League"],
+            TeamsForFixtures[
+              team.dataValues.name as keyof typeof TeamsForFixtures
+            ]
+          )
+          .then((fixtures) => ({
+            teamName:
+              TeamsForFixtures[
+                team.dataValues.name as keyof typeof TeamsForFixtures
+              ],
+            fixtures: fixtures.map((f) => ({
+              result: f.result,
+              score: f.score,
+              against: f.against,
+              datetime: f.datetime,
+            })),
+          }))
     );
+    const allFixtures: any[] = await Promise.all(fixturesPromises);
+
     let normalizedTeams = getTeams.map((team: TeamData) => {
       const tablePosition = team.table_position;
+      const fixtures = allFixtures.find(
+        (f: any) =>
+          f.teamName ===
+          TeamsForFixtures[team.name as keyof typeof TeamsForFixtures]
+      );
+      console.log(
+        "🚀 ~ MatchesService ~ normalizedTeams ~ fixtures:",
+        fixtures
+      );
 
       const teamStats = overAllStats.find((s: TeamStats) => s.id === team.id);
       const last5 = last5Stats.find((s: TeamStats) => s.id === team.id);
       const last5Home = last5HomeStats.find((s: TeamStats) => s.id === team.id);
       const last5Away = last5AwayStats.find((s: TeamStats) => s.id === team.id);
-      const last5Fixtures = getFixtures.find(
-        (f: any) =>
-          f.teamName ===
-          TeamsForFixtures[team.name as keyof typeof TeamsForFixtures]
-      );
+      const last5FixturesTotal = allFixtures.find((f: TeamFixtureResponse) => {
+        const teamKey =
+          TeamsForFixtures[
+            team.dataValues.name as keyof typeof TeamsForFixtures
+          ];
+        // console.log("Debug:", {
+        //   teamFromDB: team.dataValues.name,
+        //   mappedTeamName: teamKey,
+        //   allFixtures: allFixtures,
+        //   fixtureTeamNames: allFixtures.map((f) => f.teamName),
+        // });
+        return f.teamName === teamKey;
+      });
 
       if (!teamStats || !last5 || !last5Home || !last5Away) {
         throw new Error(`Missing stats for team ${team.name}`);
@@ -272,10 +305,14 @@ export class MatchesService {
         away_kits: `/api/images/away/${
           NormalizedPlTeam[team.name as keyof typeof NormalizedPlTeam]
         }.svg`,
-        overall: this.mapStatsSection(teamStats, [], tablePosition),
-        last5: this.mapStatsSection(last5, last5Fixtures, null),
-        last5Home: this.mapStatsSection(last5Home, last5Fixtures, null),
-        last5Away: this.mapStatsSection(last5Away, last5Fixtures, null),
+        overall: this.mapStatsSection(
+          teamStats,
+          last5FixturesTotal,
+          tablePosition
+        ),
+        last5: this.mapStatsSection(last5, last5FixturesTotal, null),
+        last5Home: this.mapStatsSection(last5Home, undefined, null),
+        last5Away: this.mapStatsSection(last5Away, undefined, null),
       };
     });
 
@@ -288,7 +325,7 @@ export class MatchesService {
 
   private mapStatsSection(
     stats: TeamStats,
-    last5Games?: any[],
+    last5Games?: TeamFixtureResponse,
     tablePosition?: number | null
   ): StatsSection {
     return {
@@ -345,7 +382,7 @@ export class MatchesService {
       dangerousAttacksConcededAway: this.dangerousAttacksConcededAway(stats),
       ppgHome: parseFloat(stats.ppgHome),
       ppgAway: parseFloat(stats.ppgAway),
-      games: last5Games || undefined,
+      games: last5Games?.fixtures || undefined,
       // games: last5Games || undefined,
     };
   }
