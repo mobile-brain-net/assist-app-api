@@ -213,8 +213,8 @@ export class MatchesService {
   } {
     return {
       status: match.date_unix >= dayjs().unix() ? "ns" : "f",
-      homegoals: match.stats.status === "f" ? match.stats.home_goals : null,
-      awaygoals: match.stats.status === "f" ? match.stats.away_goals : null,
+      homegoals: match.stats.dataValues.home_goals ?? null,
+      awaygoals: match.stats.dataValues.away_goals ?? null,
     };
   }
 

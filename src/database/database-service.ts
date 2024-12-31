@@ -909,7 +909,7 @@ LIMIT 5;`;
         competition_id: competitionId,
         date_unix: {
           [Op.gt]: dayjs().subtract(15, "day").unix(), // Greater than 14 days ago
-          [Op.lte]: dayjs().add(14, "day").unix(), // Less than 14 days from now
+          [Op.lte]: dayjs().add(1, "day").unix(), // Less than 14 days from now
         },
       },
       include: [

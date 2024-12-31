@@ -7,7 +7,7 @@ const sequelize = new Sequelize({
   password: process.env.DB_PASSWORD || "root",
   database: process.env.DB_NAME || "assist_app",
   port: Number(process.env.DB_PORT) || 8889,
-  logging: false,
+  logging: true,
   pool: {
     max: 5,
     min: 0,
