@@ -437,6 +437,55 @@ ORDER BY points DESC;`;
     });
   }
 
+  async getFixturesForTeam(
+    competitionId: number,
+    teamName: string
+  ): Promise<any[]> {
+    // All parameters are the same teamName because it's used multiple times in the query
+    const query = `SELECT ? as teamName,
+      CASE
+          WHEN (fixtures.home_team_name = ? AND fixtures.home_goals > fixtures.away_goals) OR
+               (fixtures.away_team_name = ? AND fixtures.away_goals > fixtures.home_goals) THEN 'w'
+          WHEN (fixtures.home_team_name = ? AND fixtures.home_goals < fixtures.away_goals) OR
+               (fixtures.away_team_name = ? AND fixtures.away_goals < fixtures.home_goals) THEN 'l'
+          ELSE 'd'
+      END as result,
+      CASE
+          WHEN fixtures.home_team_name = ? THEN CONCAT(fixtures.home_goals, '-', fixtures.away_goals)
+          ELSE CONCAT(fixtures.away_goals, '-', fixtures.home_goals)
+      END as score,
+      CASE
+          WHEN fixtures.home_team_name = ? THEN fixtures.away_team_name
+          ELSE fixtures.home_team_name
+      END as against,
+      DATE_FORMAT(fixtures.fixture_date, '%Y-%m-%d %H:%i:%s') as datetime
+  FROM fixtures
+  WHERE (fixtures.home_team_name = ? OR fixtures.away_team_name = ?)
+  AND fixtures.status_short = 'FT'
+  AND fixtures.league_id = ?
+  ORDER BY fixtures.fixture_date DESC
+  LIMIT 5;
+      `;
+    const params = [
+      teamName,
+      teamName,
+      teamName,
+      teamName,
+      teamName,
+      teamName,
+      teamName,
+      teamName,
+      teamName,
+      competitionId,
+    ];
+
+    const results = await sequelize.query(query, {
+      type: QueryTypes.SELECT,
+      replacements: params,
+    });
+    return results;
+  }
+
   async saveMatches(matches: any[]): Promise<void> {
     try {
       for (const match of matches) {
