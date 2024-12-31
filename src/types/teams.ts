@@ -106,6 +106,7 @@ export interface TeamStats {
   possessionAvgHome: string;
   possessionAvgAway: string;
   games: any[];
+  position?: number;
 }
 
 export interface TeamData {

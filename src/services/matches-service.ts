@@ -17,6 +17,17 @@ import timezone from "dayjs/plugin/timezone";
 import { PredictionsService } from "./predictions-service";
 import Prediction from "../models/predictions";
 import { TeamFixture, TeamFixtureResponse } from "../types/fixtures";
+import {
+  calculateChance2score,
+  calculateChance2scoreHome,
+  calculateChance2scoreAway,
+  calculateCornersWonOver0_5,
+  calculateCornersWonOver1_5,
+  calculateBTTSMetrics,
+  calculateShotsMetrics,
+  calculateDangerousAttacks,
+  calculateTeamPositions,
+} from "../utils/matches-utils";
 
 // Define the Prediction type based on the Prediction model
 type PredictionType = Omit<Prediction, "id" | "createdAt" | "updatedAt">; // Exclude any auto-generated fields if necessary
@@ -230,13 +241,19 @@ export class MatchesService {
 
     const getTeams = await this.dbService.getTeams(competitionId);
     const overAllStats = await this.dbService.getOverAllStats(competitionId);
+
     const last5Stats = await this.dbService.getLast5Stats(competitionId);
+    const last5StatsWithPosition = calculateTeamPositions(last5Stats);
+
     const last5HomeStats = await this.dbService.getLast5HomeStats(
       competitionId
     );
+    const last5HomeStatsWithPosition = calculateTeamPositions(last5HomeStats);
+
     const last5AwayStats = await this.dbService.getLast5AwayStats(
       competitionId
     );
+    const last5AwayStatsWithPosition = calculateTeamPositions(last5AwayStats);
 
     const fixturesPromises: Promise<TeamFixtureResponse>[] = getTeams.map(
       (team: TeamData) =>
@@ -320,9 +337,15 @@ export class MatchesService {
     let normalizedTeams = getTeams.map((team: TeamData) => {
       const tablePosition = team.table_position;
       const teamStats = overAllStats.find((s: TeamStats) => s.id === team.id);
-      const last5 = last5Stats.find((s: TeamStats) => s.id === team.id);
-      const last5Home = last5HomeStats.find((s: TeamStats) => s.id === team.id);
-      const last5Away = last5AwayStats.find((s: TeamStats) => s.id === team.id);
+      const last5 = last5StatsWithPosition.find(
+        (s: TeamStats) => s.id === team.id
+      );
+      const last5Home = last5HomeStatsWithPosition.find(
+        (s: TeamStats) => s.id === team.id
+      );
+      const last5Away = last5AwayStatsWithPosition.find(
+        (s: TeamStats) => s.id === team.id
+      );
       const last5FixturesTotal = allFixtures.find((f: TeamFixtureResponse) => {
         const teamKey =
           TeamsForFixtures[
@@ -374,7 +397,7 @@ export class MatchesService {
     tablePosition?: number | null
   ): StatsSection {
     return {
-      position: tablePosition ? tablePosition : "TO FIX",
+      position: tablePosition ? tablePosition : stats.position || 0,
       matchesPlayed:
         parseInt(stats.wins) + parseInt(stats.draws) + parseInt(stats.losses),
       wins: parseInt(stats.wins),
@@ -387,27 +410,27 @@ export class MatchesService {
       goalsConceded: parseInt(stats.goalsConceded),
       goalsConcededHome: parseInt(stats.goalsConcededHome),
       goalsConcededAway: parseInt(stats.goalsConcededAway),
-      chance2score: this.chance2score(stats),
-      chance2scoreHome: this.chance2scoreHome(stats),
-      chance2scoreAway: this.chance2scoreAway(stats),
+      chance2score: calculateChance2score(stats),
+      chance2scoreHome: calculateChance2scoreHome(stats),
+      chance2scoreAway: calculateChance2scoreAway(stats),
       cornersWonAvg: parseFloat(stats.cornersWonAvg),
-      cornersWonOver0_5: this.cornersWonOver0_5(stats),
-      cornersWonOver1_5: this.cornersWonOver1_5(stats),
+      cornersWonOver0_5: calculateCornersWonOver0_5(stats),
+      cornersWonOver1_5: calculateCornersWonOver1_5(stats),
       cornersWonHighest: parseInt(stats.cornersWonHighest),
       BTTS: parseFloat(stats.BTTS),
-      BTTSOver0_5: this.BTTSOver0_5(stats),
-      BTTSOver1_5: this.BTTSOver1_5(stats),
-      BTTSHighest: this.BTTSHighest(stats),
+      BTTSOver0_5: calculateBTTSMetrics.over0_5(stats),
+      BTTSOver1_5: calculateBTTSMetrics.over1_5(stats),
+      BTTSHighest: calculateBTTSMetrics.highest(stats),
       xG: parseFloat(stats.xG),
       dxG: parseFloat(stats.dxG),
       shotsTaken: parseFloat(stats.shotsTaken),
-      shotsTakenFirstHalf: this.shotsTakenFirstHalf(stats),
-      shotsTakenSecondHalf: this.shotsTakenSecondHalf(stats),
+      shotsTakenFirstHalf: calculateShotsMetrics.takenFirstHalf(stats),
+      shotsTakenSecondHalf: calculateShotsMetrics.takenSecondHalf(stats),
       shotsConceded: parseFloat(stats.shotsConceded),
-      shotsConcededFirstHalf: this.shotsConcededFirstHalf(stats),
-      shotsConcededSecondHalf: this.shotsConcededSecondHalf(stats),
-      shotsCR: this.shotsCR(stats),
-      shotsConcededCR: this.shotsConcededCR(stats),
+      shotsConcededFirstHalf: calculateShotsMetrics.concededFirstHalf(stats),
+      shotsConcededSecondHalf: calculateShotsMetrics.concededSecondHalf(stats),
+      shotsCR: calculateShotsMetrics.CR(stats),
+      shotsConcededCR: calculateShotsMetrics.concededCR(stats),
       shotsOnTarget: parseFloat(stats.shotsOnTarget),
       shotsOnTargetHome: parseFloat(stats.shotsOnTargetHome),
       shotsOnTargetAway: parseFloat(stats.shotsOnTargetAway),
@@ -422,238 +445,14 @@ export class MatchesService {
       dangerousAttacks: parseInt(stats.dangerousAttacks),
       dangerousAttacksHome: parseInt(stats.dangerousAttacksHome),
       dangerousAttacksAway: parseInt(stats.dangerousAttacksAway),
-      dangerousAttacksConceded: this.dangerousAttacksConceded(stats),
-      dangerousAttacksConcededHome: this.dangerousAttacksConcededHome(stats),
-      dangerousAttacksConcededAway: this.dangerousAttacksConcededAway(stats),
+      dangerousAttacksConceded: calculateDangerousAttacks.conceded(stats),
+      dangerousAttacksConcededHome:
+        calculateDangerousAttacks.concededHome(stats),
+      dangerousAttacksConcededAway:
+        calculateDangerousAttacks.concededAway(stats),
       ppgHome: parseFloat(stats.ppgHome),
       ppgAway: parseFloat(stats.ppgAway),
       games: last5Games?.fixtures || undefined,
-      // games: last5Games || undefined,
     };
-  }
-
-  private chance2score(teamStats: TeamStats): number {
-    const xg = parseFloat(teamStats.xG);
-    const dxg = parseFloat(teamStats.dxG);
-
-    if (xg === 0 || isNaN(xg) || isNaN(dxg)) return 0;
-
-    const result = Number(((xg + dxg) / xg).toFixed(2));
-    return result;
-  }
-
-  private chance2scoreHome(teamStats: TeamStats): number {
-    const homeXg = parseFloat(teamStats.homeXg);
-    const homeOpponentXg = parseFloat(teamStats.awayXg);
-
-    if (homeXg === 0 || isNaN(homeXg) || isNaN(homeOpponentXg)) return 0;
-
-    const result = Number(((homeXg + homeOpponentXg) / homeXg).toFixed(2));
-    return result;
-  }
-
-  private chance2scoreAway(teamStats: TeamStats): number {
-    const awayXg = parseFloat(teamStats.awayXg);
-    const awayOpponentXg = parseFloat(teamStats.homeXg);
-    const result = Number(((awayXg + awayOpponentXg) / awayXg).toFixed(2));
-    return result;
-  }
-
-  private cornersWonOver0_5(teamStats: TeamStats): number {
-    const cornersWonAvg = parseFloat(teamStats.cornersWonAvg);
-    const cornersWonOver1_5 = parseFloat(teamStats.cornersWonOver1_5);
-    const cornersWonHighest = parseInt(teamStats.cornersWonHighest);
-
-    if (
-      cornersWonAvg === 0 ||
-      isNaN(cornersWonAvg) ||
-      isNaN(cornersWonOver1_5) ||
-      isNaN(cornersWonHighest)
-    )
-      return 0;
-
-    const result = Number(
-      ((cornersWonAvg + cornersWonOver1_5 + cornersWonHighest) / 3).toFixed(2)
-    );
-    return result;
-  }
-
-  private cornersWonOver1_5(teamStats: TeamStats): number {
-    const cornersWonOver1_5 = parseFloat(teamStats.cornersWonOver1_5);
-    const cornersWonHighest = parseInt(teamStats.cornersWonHighest);
-
-    if (
-      cornersWonOver1_5 === 0 ||
-      isNaN(cornersWonOver1_5) ||
-      isNaN(cornersWonHighest)
-    )
-      return 0;
-
-    const result = Number(
-      ((cornersWonOver1_5 + cornersWonHighest) / 2).toFixed(2)
-    );
-    return result;
-  }
-
-  private BTTSOver0_5(teamStats: TeamStats): number | null {
-    const BTTSOver0_5 = parseFloat(teamStats.BTTSOver0_5);
-
-    if (BTTSOver0_5 === 0 || isNaN(BTTSOver0_5)) return null;
-
-    return BTTSOver0_5;
-  }
-
-  private BTTSOver1_5(teamStats: TeamStats): number | null {
-    const BTTSOver1_5 = parseFloat(teamStats.BTTSOver1_5);
-
-    if (BTTSOver1_5 === 0 || isNaN(BTTSOver1_5)) return null;
-
-    return BTTSOver1_5;
-  }
-
-  private BTTSHighest(teamStats: TeamStats): number | null {
-    const BTTSHighest = parseFloat(teamStats.BTTSHighest);
-
-    if (BTTSHighest === 0 || isNaN(BTTSHighest)) return null;
-
-    return BTTSHighest;
-  }
-
-  private shotsTakenFirstHalf(teamStats: TeamStats): number | null {
-    const shotsTaken = parseFloat(teamStats.shotsTaken);
-    const shotsTakenHome = parseFloat(teamStats.shotsTakenHome);
-    const shotsTakenAway = parseFloat(teamStats.shotsTakenAway);
-
-    if (
-      shotsTaken === 0 ||
-      isNaN(shotsTaken) ||
-      isNaN(shotsTakenHome) ||
-      isNaN(shotsTakenAway)
-    )
-      return null;
-
-    const result = Number(((shotsTakenHome + shotsTakenAway) / 2).toFixed(2));
-    return result;
-  }
-
-  private shotsTakenSecondHalf(teamStats: TeamStats): number | null {
-    const shotsTaken = parseFloat(teamStats.shotsTaken);
-    const shotsTakenHome = parseFloat(teamStats.shotsTakenHome);
-    const shotsTakenAway = parseFloat(teamStats.shotsTakenAway);
-
-    if (
-      shotsTaken === 0 ||
-      isNaN(shotsTaken) ||
-      isNaN(shotsTakenHome) ||
-      isNaN(shotsTakenAway)
-    )
-      return null;
-
-    const result = Number(((shotsTakenHome + shotsTakenAway) / 2).toFixed(2));
-    return result;
-  }
-
-  private shotsConcededFirstHalf(teamStats: TeamStats): number | null {
-    const shotsConceded = parseFloat(teamStats.shotsConceded);
-    const shotsConcededHome = parseFloat(teamStats.shotsConcededHome);
-    const shotsConcededAway = parseFloat(teamStats.shotsConcededAway);
-
-    if (
-      shotsConceded === 0 ||
-      isNaN(shotsConceded) ||
-      isNaN(shotsConcededHome) ||
-      isNaN(shotsConcededAway)
-    )
-      return null;
-
-    const result = Number(
-      ((shotsConcededHome + shotsConcededAway) / 2).toFixed(2)
-    );
-    return result;
-  }
-
-  private shotsConcededSecondHalf(teamStats: TeamStats): number | null {
-    const shotsConceded = parseFloat(teamStats.shotsConceded);
-    const shotsConcededHome = parseFloat(teamStats.shotsConcededHome);
-    const shotsConcededAway = parseFloat(teamStats.shotsConcededAway);
-
-    if (
-      shotsConceded === 0 ||
-      isNaN(shotsConceded) ||
-      isNaN(shotsConcededHome) ||
-      isNaN(shotsConcededAway)
-    )
-      return null;
-
-    const result = Number(
-      ((shotsConcededHome + shotsConcededAway) / 2).toFixed(2)
-    );
-    return result;
-  }
-
-  private shotsCR(teamStats: TeamStats): number {
-    const shotsTaken = parseFloat(teamStats.shotsTaken);
-    const shotsConceded = parseFloat(teamStats.shotsConceded);
-
-    if (shotsTaken === 0 || isNaN(shotsTaken) || isNaN(shotsConceded)) return 0;
-
-    const result = Number(
-      ((shotsTaken - shotsConceded) / shotsTaken).toFixed(2)
-    );
-    return result;
-  }
-
-  private shotsConcededCR(teamStats: TeamStats): number {
-    const shotsConceded = parseFloat(teamStats.shotsConceded);
-    const shotsConcededHome = parseFloat(teamStats.shotsConcededHome);
-    const shotsConcededAway = parseFloat(teamStats.shotsConcededAway);
-
-    if (
-      shotsConceded === 0 ||
-      isNaN(shotsConceded) ||
-      isNaN(shotsConcededHome) ||
-      isNaN(shotsConcededAway)
-    )
-      return 0;
-
-    const result = Number(
-      ((shotsConcededHome + shotsConcededAway) / 2).toFixed(2)
-    );
-    return result;
-  }
-
-  private dangerousAttacksConceded(teamStats: TeamStats): number {
-    const dangerousAttacks = parseInt(teamStats.dangerousAttacks);
-    const dangerousAttacksHome = parseInt(teamStats.dangerousAttacksHome);
-    const dangerousAttacksAway = parseInt(teamStats.dangerousAttacksAway);
-
-    if (
-      dangerousAttacks === 0 ||
-      isNaN(dangerousAttacks) ||
-      isNaN(dangerousAttacksHome) ||
-      isNaN(dangerousAttacksAway)
-    )
-      return 0;
-
-    const result = Number(
-      ((dangerousAttacksHome + dangerousAttacksAway) / 2).toFixed(2)
-    );
-    return result;
-  }
-
-  private dangerousAttacksConcededHome(teamStats: TeamStats): number {
-    const dangerousAttacksHome = parseInt(teamStats.dangerousAttacksHome);
-
-    if (dangerousAttacksHome === 0 || isNaN(dangerousAttacksHome)) return 0;
-
-    return dangerousAttacksHome;
-  }
-
-  private dangerousAttacksConcededAway(teamStats: TeamStats): number {
-    const dangerousAttacksAway = parseInt(teamStats.dangerousAttacksAway);
-
-    if (dangerousAttacksAway === 0 || isNaN(dangerousAttacksAway)) return 0;
-
-    return dangerousAttacksAway;
   }
 }
