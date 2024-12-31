@@ -1,8 +1,5 @@
 import { Router } from "express";
-import {
-  fetchFixtureData,
-  fetchFixtures,
-} from "../controllers/fixtures-controller";
+import { fetchFixtureData } from "../controllers/fixtures-controller";
 
 const router = Router();
 

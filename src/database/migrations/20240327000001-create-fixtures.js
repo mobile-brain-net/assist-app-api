@@ -1,7 +1,7 @@
 const { DataTypes } = require("sequelize");
 
 module.exports = {
-  async up(queryInterface) {
+  async up(queryInterface, Sequelize) {
     await queryInterface.createTable("fixtures", {
       fixture_id: {
         type: DataTypes.INTEGER,
@@ -21,19 +21,19 @@ module.exports = {
         allowNull: true,
       },
       timestamp: {
-        type: DataTypes.NUMBER,
+        type: DataTypes.INTEGER,
         allowNull: true,
       },
       first_period_start: {
-        type: DataTypes.NUMBER,
+        type: Sequelize.INTEGER,
         allowNull: true,
       },
       second_period_start: {
-        type: DataTypes.NUMBER,
+        type: Sequelize.INTEGER,
         allowNull: true,
       },
       venue_id: {
-        type: DataTypes.INTEGER,
+        type: Sequelize.INTEGER,
         allowNull: true,
       },
       venue_name: {

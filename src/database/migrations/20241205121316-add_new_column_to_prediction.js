@@ -3,18 +3,30 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.addColumn("predictions", "home_goals_for_average", {
-      type: Sequelize.STRING,
-      allowNull: true,
-    });
-    await queryInterface.addColumn("predictions", "away_goals_for_average", {
-      type: Sequelize.STRING,
-      allowNull: true,
-    });
+    const table = await queryInterface.describeTable("predictions");
+
+    const columnsToAdd = {
+      home_goals_for_average: { type: Sequelize.FLOAT, allowNull: true },
+      // ... other columns
+    };
+
+    for (const [columnName, config] of Object.entries(columnsToAdd)) {
+      if (!table[columnName]) {
+        await queryInterface.addColumn("predictions", columnName, config);
+      }
+    }
   },
 
-  async down(queryInterface, Sequelize) {
-    await queryInterface.removeColumn("predictions", "home_goals_for_average");
-    await queryInterface.removeColumn("predictions", "away_goals_for_average");
+  async down(queryInterface) {
+    const columns = [
+      "home_goals_for_average",
+      // ... other columns
+    ];
+
+    return Promise.all(
+      columns.map((column) =>
+        queryInterface.removeColumn("predictions", column)
+      )
+    );
   },
 };
