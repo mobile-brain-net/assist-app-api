@@ -1,5 +1,4 @@
 import { Sequelize } from "sequelize";
-import Prediction from "../models/predictions";
 const sequelize = new Sequelize({
   dialect: "mysql",
   host: process.env.DB_HOST || "127.0.0.1",
@@ -7,7 +6,7 @@ const sequelize = new Sequelize({
   password: process.env.DB_PASSWORD || "root",
   database: process.env.DB_NAME || "assist_app",
   port: Number(process.env.DB_PORT) || 8889,
-  logging: true,
+  logging: false,
   pool: {
     max: 5,
     min: 0,
