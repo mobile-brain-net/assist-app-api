@@ -53,3 +53,8 @@ export interface StatsSection {
   ppgAway: number;
   games?: any[];
 }
+
+export interface StatsSectionJSON {
+  "cornersWonOver0.5": number;
+  "cornersWonOver1.5": number;
+}

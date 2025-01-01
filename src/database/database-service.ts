@@ -978,9 +978,9 @@ LIMIT 5;`;
         ["home_last_5_def", "teams_home_last_5_def"],
         ["away_last_5_def", "teams_away_last_5_def"],
         ["home_goals_for_total", "teams_home_goals_for_total"],
-        ["home_goals_for_average", "teams_home_goals_for_average_home"],
+        ["home_goals_for_average", "teams_home_last_5_goals_for_average"],
         ["away_goals_for_total", "teams_away_goals_for_total"],
-        ["away_goals_for_average", "teams_away_goals_for_average_away"],
+        ["away_goals_for_average", "teams_home_last_5_goals_for_average"],
       ],
       where: {
         league_id: leagueId,
