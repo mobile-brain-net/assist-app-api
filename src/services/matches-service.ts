@@ -147,9 +147,9 @@ export class MatchesService {
             teams_home_last_5_def: "",
             teams_away_last_5_def: "",
             teams_home_goals_for_total: 0,
-            teams_home_goals_for_average: "",
+            teams_home_goals_for_average_home: "",
             teams_away_goals_for_total: 0,
-            teams_away_goals_for_average: "",
+            teams_away_goals_for_average_away: "",
           };
         }
 
@@ -158,8 +158,8 @@ export class MatchesService {
             .unix(match.date_unix)
             .tz("Europe/London")
             .format("DD/MM/YYYY HH:mm"),
-          home: this.mapTeam(match.home),
-          away: this.mapTeam(match.away),
+          home: this.mapTeam(match.home, "home"),
+          away: this.mapTeam(match.away, "away"),
           result: this.mapResult(match),
           odds,
           prediction,
@@ -207,11 +207,14 @@ export class MatchesService {
     )[0];
   }
 
-  private mapTeam(team: any): { name: string; icon: string; kits: string } {
+  private mapTeam(
+    team: any,
+    kitsHomeOrAway: "home" | "away"
+  ): { name: string; icon: string; kits: string } {
     return {
       name: NormalizedPlTeam[team.name as keyof typeof NormalizedPlTeam],
       icon: team.image,
-      kits: `/api/images/home/${
+      kits: `/api/images/${kitsHomeOrAway}/${
         NormalizedPlTeam[team.name as keyof typeof NormalizedPlTeam]
       }.svg`,
     };
@@ -222,10 +225,13 @@ export class MatchesService {
     homegoals: number | null;
     awaygoals: number | null;
   } {
+    const matchStatus = match.date_unix >= dayjs().unix() ? "ns" : "f";
     return {
-      status: match.date_unix >= dayjs().unix() ? "ns" : "f",
-      homegoals: match.stats.dataValues.home_goals ?? null,
-      awaygoals: match.stats.dataValues.away_goals ?? null,
+      status: matchStatus,
+      homegoals:
+        matchStatus === "ns" ? null : match.stats.dataValues.home_goals,
+      awaygoals:
+        matchStatus === "ns" ? null : match.stats.dataValues.away_goals,
     };
   }
 

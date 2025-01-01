@@ -908,8 +908,8 @@ LIMIT 5;`;
       where: {
         competition_id: competitionId,
         date_unix: {
-          [Op.gt]: dayjs().subtract(15, "day").unix(), // Greater than 14 days ago
-          [Op.lte]: dayjs().add(1, "day").unix(), // Less than 14 days from now
+          [Op.gt]: dayjs().subtract(14, "day").unix(), // Greater than 14 days ago
+          [Op.lte]: dayjs().add(14, "day").unix(), // Less than 14 days from now
         },
       },
       include: [
@@ -976,9 +976,9 @@ LIMIT 5;`;
         ["home_last_5_def", "teams_home_last_5_def"],
         ["away_last_5_def", "teams_away_last_5_def"],
         ["home_goals_for_total", "teams_home_goals_for_total"],
-        ["home_goals_for_average", "teams_home_goals_for_average"],
+        ["home_goals_for_average", "teams_home_goals_for_average_home"],
         ["away_goals_for_total", "teams_away_goals_for_total"],
-        ["away_goals_for_average", "teams_away_goals_for_average"],
+        ["away_goals_for_average", "teams_away_goals_for_average_away"],
       ],
       where: {
         league_id: leagueId,
