@@ -359,6 +359,12 @@ export class MatchesService {
 
     let normalizedTeams = getTeams.map((team: TeamData) => {
       const tablePosition = team.table_position;
+      console.log(
+        "🚀 ~ MatchesService ~ normalizedTeams ~ tablePosition:",
+        team.normalized_name,
+        tablePosition
+      );
+
       const teamStats = overAllStats.find((s: TeamStats) => s.id === team.id);
       const last5 = last5StatsWithPosition.find(
         (s: TeamStats) => s.id === team.id
@@ -369,7 +375,7 @@ export class MatchesService {
       const last5Away = last5AwayStatsWithPosition.find(
         (s: TeamStats) => s.id === team.id
       );
-      const last5FixturesTotal = allFixturesHome.find(
+      const last5FixturesTotal = allFixtures.find(
         (f: TeamFixtureResponse) =>
           f.teamName ===
           TeamsForFixtures[team.name as keyof typeof TeamsForFixtures]
