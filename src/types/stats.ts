@@ -19,8 +19,8 @@ export interface StatsSection {
   cornersWonOver1_5: number;
   cornersWonHighest: number;
   BTTS: number;
-  BTTSOver0_5: number | null;
-  BTTSOver1_5: number | null;
+  "BTTSOver0.5": number | null;
+  "BTTSOver1.5": number | null;
   BTTSHighest: number | null;
   xG: number;
   dxG: number;
