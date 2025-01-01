@@ -441,7 +441,7 @@ export class MatchesService {
       shotsConceded: parseFloat(stats.shotsConceded),
       shotsConcededFirstHalf: calculateShotsMetrics.concededFirstHalf(stats),
       shotsConcededSecondHalf: calculateShotsMetrics.concededSecondHalf(stats),
-      shotsCR: calculateShotsMetrics.CR(stats),
+      shotsCR: Math.abs(calculateShotsMetrics.CR(stats)),
       shotsConcededCR: calculateShotsMetrics.concededCR(stats),
       shotsOnTarget: parseFloat(stats.shotsOnTarget),
       shotsOnTargetHome: parseFloat(stats.shotsOnTargetHome),
