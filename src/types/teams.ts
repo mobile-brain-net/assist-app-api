@@ -38,7 +38,7 @@ export enum TeamsForFixtures {
   "Everton FC" = "Everton",
   "Fulham FC" = "Fulham",
   "Huddersfield Town FC" = "Huddersfield",
-  "Ipswich Town FC" = "Ipswich",
+  "Ipswich Town FC" = "Ipswich Town",
   "Leeds United FC" = "Leeds United",
   "Leicester City FC" = "Leicester",
   "Liverpool FC" = "Liverpool",
@@ -113,9 +113,12 @@ export interface TeamData {
   id: number;
   name: string;
   table_position: number;
+  normalized_name: string;
   dataValues: {
     id: number;
     name: string;
     table_position: number;
+    normalized_name: string;
+    name_from_fixtures: string;
   };
 }

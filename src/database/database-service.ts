@@ -994,7 +994,13 @@ LIMIT 5;`;
   async getTeams(competitionId: number): Promise<any[]> {
     try {
       return LeagueTeam.findAll({
-        attributes: ["id", "name", "table_position"],
+        attributes: [
+          "id",
+          "name",
+          "table_position",
+          "normalized_name",
+          "name_from_fixtures",
+        ],
         where: {
           competition_id: competitionId,
         },

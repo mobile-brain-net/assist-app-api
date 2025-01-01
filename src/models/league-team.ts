@@ -4,6 +4,8 @@ import sequelize from "../database/sequelize";
 export class LeagueTeam extends Model {
   public id!: number;
   public name!: string;
+  public normalized_name!: string;
+  public name_from_fixtures!: string;
   public clean_name?: string;
   public english_name?: string;
   public country?: string;
@@ -33,9 +35,16 @@ LeagueTeam.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    normalized_name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    name_from_fixtures: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     clean_name: DataTypes.STRING,
     english_name: DataTypes.STRING,
-
     country: DataTypes.STRING,
     founded: DataTypes.STRING,
     image: DataTypes.STRING,

@@ -271,14 +271,14 @@ export class MatchesService {
             ]
           )
           .then((fixtures) => ({
-            teamName:
-              TeamsForFixtures[
-                team.dataValues.name as keyof typeof TeamsForFixtures
-              ],
+            teamName: team.dataValues.normalized_name,
             fixtures: fixtures.map((f) => ({
               result: f.result,
               score: f.score,
-              against: f.against,
+              against:
+                getTeams.find(
+                  (t) => t.dataValues.name_from_fixtures === f.against
+                )?.dataValues.normalized_name || f.against,
               datetime: f.datetime,
             })),
           }))
@@ -301,7 +301,10 @@ export class MatchesService {
             fixtures: fixtures.map((f) => ({
               result: f.result,
               score: f.score,
-              against: f.against,
+              against:
+                getTeams.find(
+                  (t) => t.dataValues.name_from_fixtures === f.against
+                )?.dataValues.normalized_name || f.against,
               datetime: f.datetime,
             })),
           }))
@@ -324,7 +327,10 @@ export class MatchesService {
             fixtures: fixtures.map((f) => ({
               result: f.result,
               score: f.score,
-              against: f.against,
+              against:
+                getTeams.find(
+                  (t) => t.dataValues.name_from_fixtures === f.against
+                )?.dataValues.normalized_name || f.against,
               datetime: f.datetime,
             })),
           }))
