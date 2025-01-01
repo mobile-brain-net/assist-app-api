@@ -98,7 +98,8 @@ export class MatchesService {
       );
       const matchesData = await this.mapMatchesWithPredictions(
         matchesDataForJson,
-        leagueId
+        leagueId,
+        competitionId
       );
 
       return [
@@ -115,7 +116,8 @@ export class MatchesService {
 
   private async mapMatchesWithPredictions(
     matchesDataForJson: any[],
-    leagueId: number
+    leagueId: number,
+    competitionId: number
   ): Promise<any[]> {
     return Promise.all(
       matchesDataForJson.map(async (match) => {
@@ -125,10 +127,14 @@ export class MatchesService {
         // Non-null assertion (!) forces TypeScript to treat the possibly undefined prediction as defined
         // This could cause runtime errors if getPrediction returns undefined
         // Consider handling the undefined case explicitly instead
-        let prediction = (await this.getPrediction(match, leagueId))!;
+        let prediction = (await this.getPrediction(
+          match,
+          leagueId,
+          competitionId
+        ))!;
         if (!prediction) {
           prediction = <any>{
-            fixture_id: "",
+            fixture_id: 0,
             predictions_percent_home: "0",
             predictions_percent_draw: "0",
             predictions_percent_away: "0",
@@ -196,12 +202,20 @@ export class MatchesService {
 
   private async getPrediction(
     match: any,
-    leagueId: number
+    leagueId: number,
+    competitionId: number
   ): Promise<PredictionType | undefined> {
+    const teams = await this.dbService.getTeams(competitionId);
+
+    const homeTeam = teams.find((t) => t.dataValues.name === match.home.name);
+    const awayTeam = teams.find((t) => t.dataValues.name === match.away.name);
+
+    if (!homeTeam || !awayTeam) return undefined;
+
     return (
       await this.predictionsService.getPredictionsByTeams(
-        NormalizedPlTeam[match.home.name as keyof typeof NormalizedPlTeam],
-        NormalizedPlTeam[match.away.name as keyof typeof NormalizedPlTeam],
+        homeTeam.dataValues.name_from_fixtures,
+        awayTeam.dataValues.name_from_fixtures,
         leagueId
       )
     )[0];

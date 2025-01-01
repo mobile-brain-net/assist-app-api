@@ -955,6 +955,8 @@ LIMIT 5;`;
     awayTeam: string,
     leagueId: number
   ): Promise<any[]> {
+    const HomeTeam = homeTeam.replace(" Town", "");
+    const AwayTeam = awayTeam.replace(" Town", "");
     return Prediction.findAll({
       attributes: [
         "fixture_id",
