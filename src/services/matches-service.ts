@@ -4,19 +4,14 @@ import { Match } from "../models/match";
 import { CompetitionMap } from "../types/competition";
 import { LeagueIdMap } from "../types/leagues";
 import { GetMatchesResponse } from "../types/api-types";
-import {
-  NormalizedPlTeam,
-  TeamStats,
-  TeamData,
-  TeamsForFixtures,
-} from "../types/teams";
+import { NormalizedPlTeam, TeamStats, TeamData } from "../types/teams";
 import { StatsSection, StatsSectionJSON } from "../types/stats";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import { PredictionsService } from "./predictions-service";
 import Prediction from "../models/predictions";
-import { TeamFixture, TeamFixtureResponse } from "../types/fixtures";
+import { TeamFixtureResponse } from "../types/fixtures";
 import {
   calculateChance2score,
   calculateChance2scoreHome,
@@ -96,6 +91,7 @@ export class MatchesService {
         date,
         competitionId
       );
+
       const matchesData = await this.mapMatchesWithPredictions(
         matchesDataForJson,
         leagueId,
@@ -121,6 +117,10 @@ export class MatchesService {
   ): Promise<any[]> {
     return Promise.all(
       matchesDataForJson.map(async (match) => {
+        console.log(
+          "🚀 ~ MatchesService ~ matchesDataForJson.map ~ match:",
+          match
+        );
         dayjs.extend(utc);
         dayjs.extend(timezone);
         const odds = this.calculateOdds(match.odds);
@@ -187,17 +187,17 @@ export class MatchesService {
         away_win: 0,
       };
     }
-    let home_win = Math.round((odds.odds_ft_1 / oddsTotal) * 100);
+
+    // Swap odds_ft_1 (away) and odds_ft_2 (home)
+    let away_win = Math.round((odds.odds_ft_1 / oddsTotal) * 100);
     const draw = Math.round((odds.odds_ft_x / oddsTotal) * 100);
-    const away_win = Math.round((odds.odds_ft_2 / oddsTotal) * 100);
+    const home_win = Math.round((odds.odds_ft_2 / oddsTotal) * 100);
+
     if (home_win + draw + away_win !== 100) {
-      home_win = 100 - (draw + away_win);
+      away_win = 100 - (draw + home_win);
     }
-    return {
-      home_win,
-      draw,
-      away_win,
-    };
+
+    return { home_win, draw, away_win };
   }
 
   private async getPrediction(
@@ -252,186 +252,162 @@ export class MatchesService {
   async aggregateMatches(params: {
     year: string;
     league_name: string;
-  }): Promise<any[]> {
+  }): Promise<{ teams: any[] }> {
     const { year, league_name } = params;
-    if (!year || !league_name) return [];
+    if (!year || !league_name) return { teams: [] };
 
     const competitionId = this.competitionIds[league_name]?.[year] || null;
-    if (!competitionId) return [];
+    if (!competitionId) return { teams: [] };
 
-    const getTeams = await this.dbService.getTeams(competitionId);
-    const overAllStats = await this.dbService.getOverAllStats(competitionId);
+    // Fetch all data in parallel
+    const [teams, overAllStats, last5Stats, last5HomeStats, last5AwayStats] =
+      await Promise.all([
+        this.dbService.getTeams(competitionId),
+        this.dbService.getOverAllStats(competitionId),
+        this.dbService.getLast5Stats(competitionId),
+        this.dbService.getLast5HomeStats(competitionId),
+        this.dbService.getLast5AwayStats(competitionId),
+      ]);
 
-    const last5Stats = await this.dbService.getLast5Stats(competitionId);
-    const last5StatsWithPosition = calculateTeamPositions(last5Stats);
-
-    const last5HomeStats = await this.dbService.getLast5HomeStats(
-      competitionId
-    );
-    const last5HomeStatsWithPosition = calculateTeamPositions(last5HomeStats);
-
-    const last5AwayStats = await this.dbService.getLast5AwayStats(
-      competitionId
-    );
-    const last5AwayStatsWithPosition = calculateTeamPositions(last5AwayStats);
-
-    const fixturesPromises: Promise<TeamFixtureResponse>[] = getTeams.map(
-      (team: TeamData) => {
-        return this.dbService
-          .getFixturesForTeam(
-            this.leagueIdMap["Premier League"],
-            team.dataValues.name_from_fixtures
-          )
-          .then((fixtures) => {
-            return {
-              teamName: team.dataValues.normalized_name,
-              fixtures: fixtures.map((f) => ({
-                result: f.result,
-                score: f.score,
-                against:
-                  getTeams.find(
-                    (t) => t.dataValues.name_from_fixtures === f.against
-                  )?.dataValues.normalized_name || f.against,
-                datetime: f.datetime,
-              })),
-            };
-          });
-      }
-    );
-
-    const fixturesHomePromises: Promise<TeamFixtureResponse>[] = getTeams.map(
-      (team: TeamData) =>
-        this.dbService
-          .getFixturesForTeamHome(
-            this.leagueIdMap["Premier League"],
-            team.dataValues.name_from_fixtures
-          )
-          .then((fixtures) => ({
-            teamName:
-              TeamsForFixtures[
-                team.dataValues.name as keyof typeof TeamsForFixtures
-              ],
-            fixtures: fixtures.map((f) => ({
-              result: f.result,
-              score: f.score,
-              against:
-                getTeams.find(
-                  (t) => t.dataValues.name_from_fixtures === f.against
-                )?.dataValues.normalized_name || f.against,
-              datetime: f.datetime,
-            })),
-          }))
-    );
-
-    const fixturesAwayPromises: Promise<TeamFixtureResponse>[] = getTeams.map(
-      (team: TeamData) =>
-        this.dbService
-          .getFixturesForTeamAway(
-            this.leagueIdMap["Premier League"],
-            team.dataValues.name_from_fixtures
-          )
-          .then((fixtures) => ({
-            teamName:
-              TeamsForFixtures[
-                team.dataValues.name as keyof typeof TeamsForFixtures
-              ],
-            fixtures: fixtures.map((f) => ({
-              result: f.result,
-              score: f.score,
-              against:
-                getTeams.find(
-                  (t) => t.dataValues.name_from_fixtures === f.against
-                )?.dataValues.normalized_name || f.against,
-              datetime: f.datetime,
-            })),
-          }))
-    );
-
-    const allFixtures: TeamFixtureResponse[] = await Promise.all(
-      fixturesPromises
-    );
-    const allFixturesHome: TeamFixtureResponse[] = await Promise.all(
-      fixturesHomePromises
-    );
-    const allFixturesAway: TeamFixtureResponse[] = await Promise.all(
-      fixturesAwayPromises
-    );
-
-    let normalizedTeams = getTeams.map((team: TeamData) => {
-      const tablePosition = team.table_position;
-      console.log(
-        "🚀 ~ MatchesService ~ normalizedTeams ~ tablePosition:",
-        team.normalized_name,
-        tablePosition
-      );
-
-      const teamStats = overAllStats.find((s: TeamStats) => s.id === team.id);
-      const last5 = last5StatsWithPosition.find(
-        (s: TeamStats) => s.id === team.id
-      );
-      const last5Home = last5HomeStatsWithPosition.find(
-        (s: TeamStats) => s.id === team.id
-      );
-      const last5Away = last5AwayStatsWithPosition.find(
-        (s: TeamStats) => s.id === team.id
-      );
-      const last5FixturesTotal = allFixtures.find(
-        (f: TeamFixtureResponse) =>
-          f.teamName ===
-          TeamsForFixtures[team.name as keyof typeof TeamsForFixtures]
-      );
-
-      const last5FixturesHome = allFixturesHome.find(
-        (f: TeamFixtureResponse) =>
-          f.teamName ===
-          TeamsForFixtures[team.name as keyof typeof TeamsForFixtures]
-      );
-      const last5FixturesAway = allFixturesAway.find(
-        (f: TeamFixtureResponse) =>
-          f.teamName ===
-          TeamsForFixtures[team.name as keyof typeof TeamsForFixtures]
-      );
-
-      if (!teamStats || !last5 || !last5Home || !last5Away) {
-        throw new Error(`Missing stats for team ${team.name}`);
-      }
-
-      return {
-        name: NormalizedPlTeam[team.name as keyof typeof NormalizedPlTeam],
-        logo: NormalizedPlTeam[team.name as keyof typeof NormalizedPlTeam],
-        home_kits: `/api/images/home/${
-          NormalizedPlTeam[team.name as keyof typeof NormalizedPlTeam]
-        }.svg`,
-        away_kits: `/api/images/away/${
-          NormalizedPlTeam[team.name as keyof typeof NormalizedPlTeam]
-        }.svg`,
-        overall: this.mapStatsSection(
-          teamStats,
-          undefined,
-          tablePosition,
-          false
-        ),
-        last5: this.mapStatsSection(last5, last5FixturesTotal, null, true),
-        last5Home: this.mapStatsSection(
-          last5Home,
-          last5FixturesHome,
-          null,
-          true
-        ),
-        last5Away: this.mapStatsSection(
-          last5Away,
-          last5FixturesAway,
-          null,
-          true
-        ),
-      };
-    });
-
-    const data: any = {
-      teams: normalizedTeams,
+    // Process stats with positions
+    const processedStats = {
+      last5: calculateTeamPositions(last5Stats),
+      last5Home: calculateTeamPositions(last5HomeStats),
+      last5Away: calculateTeamPositions(last5AwayStats),
     };
 
-    return data;
+    // Fetch all fixtures in parallel
+    const [allFixtures, allFixturesHome, allFixturesAway] = await Promise.all([
+      this.getTeamFixtures(teams, "all"),
+      this.getTeamFixtures(teams, "home"),
+      this.getTeamFixtures(teams, "away"),
+    ]);
+
+    const normalizedTeams = teams.map((team: TeamData) =>
+      this.normalizeTeamData(team, {
+        overAllStats,
+        processedStats,
+        fixtures: {
+          all: allFixtures,
+          home: allFixturesHome,
+          away: allFixturesAway,
+        },
+      })
+    );
+
+    return { teams: normalizedTeams };
+  }
+
+  private async getTeamFixtures(
+    teams: TeamData[],
+    type: "all" | "home" | "away"
+  ): Promise<TeamFixtureResponse[]> {
+    const fixtureMethod = {
+      all: "getFixturesForTeam",
+      home: "getFixturesForTeamHome",
+      away: "getFixturesForTeamAway",
+    }[type];
+
+    return Promise.all(
+      teams.map((team) =>
+        (this.dbService[fixtureMethod as keyof DatabaseService] as Function)(
+          this.leagueIdMap["Premier League"],
+          team.dataValues.name_from_fixtures
+        ).then(
+          (
+            fixtures: Array<{
+              result: string;
+              score: string;
+              against: string;
+              datetime: string;
+            }>
+          ) => ({
+            teamName: team.dataValues.normalized_name,
+            fixtures: this.mapFixtures(fixtures, teams),
+          })
+        )
+      )
+    );
+  }
+
+  private mapFixtures(
+    fixtures: Array<{
+      result: string;
+      score: string;
+      against: string;
+      datetime: string;
+    }>,
+    teams: TeamData[]
+  ) {
+    return fixtures.map((f) => ({
+      result: f.result,
+      score: f.score,
+      against:
+        teams.find((t) => t.dataValues.name_from_fixtures === f.against)
+          ?.dataValues.normalized_name || f.against,
+      datetime: f.datetime,
+    }));
+  }
+
+  private normalizeTeamData(
+    team: TeamData,
+    data: {
+      overAllStats: any[];
+      processedStats: any;
+      fixtures: {
+        all: TeamFixtureResponse[];
+        home: TeamFixtureResponse[];
+        away: TeamFixtureResponse[];
+      };
+    }
+  ) {
+    const { overAllStats, processedStats, fixtures } = data;
+    const normalizedName =
+      NormalizedPlTeam[team.name as keyof typeof NormalizedPlTeam];
+
+    const teamStats = overAllStats.find((s: TeamStats) => s.id === team.id);
+    const last5 = processedStats.last5.find((s: TeamStats) => s.id === team.id);
+    const last5Home = processedStats.last5Home.find(
+      (s: TeamStats) => s.id === team.id
+    );
+    const last5Away = processedStats.last5Away.find(
+      (s: TeamStats) => s.id === team.id
+    );
+
+    if (!teamStats || !last5 || !last5Home || !last5Away) {
+      throw new Error(`Missing stats for team ${team.name}`);
+    }
+
+    return {
+      name: normalizedName,
+      logo: normalizedName,
+      home_kits: `/api/images/home/${normalizedName}.svg`,
+      away_kits: `/api/images/away/${normalizedName}.svg`,
+      overall: this.mapStatsSection(
+        teamStats,
+        undefined,
+        team.table_position,
+        false
+      ),
+      last5: this.mapStatsSection(
+        last5,
+        fixtures.all.find((f) => f.teamName === normalizedName),
+        null,
+        true
+      ),
+      last5Home: this.mapStatsSection(
+        last5Home,
+        fixtures.home.find((f) => f.teamName === normalizedName),
+        null,
+        true
+      ),
+      last5Away: this.mapStatsSection(
+        last5Away,
+        fixtures.away.find((f) => f.teamName === normalizedName),
+        null,
+        true
+      ),
+    };
   }
 
   private mapStatsSection(

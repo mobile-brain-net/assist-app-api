@@ -27,35 +27,6 @@ export enum NormalizedPlTeam {
   "West Ham United FC" = "West Ham",
   "Wolverhampton Wanderers FC" = "Wolves",
 }
-export enum TeamsForFixtures {
-  "AFC Bournemouth" = "Bournemouth",
-  "Arsenal FC" = "Arsenal",
-  "Aston Villa FC" = "Aston Villa",
-  "Brentford FC" = "Brentford",
-  "Brighton & Hove Albion FC" = "Brighton",
-  "Chelsea FC" = "Chelsea",
-  "Crystal Palace FC" = "Crystal Palace",
-  "Everton FC" = "Everton",
-  "Fulham FC" = "Fulham",
-  "Huddersfield Town FC" = "Huddersfield",
-  "Ipswich Town FC" = "Ipswich Town",
-  "Leeds United FC" = "Leeds United",
-  "Leicester City FC" = "Leicester",
-  "Nottingham Forest FC" = "Nottingham Forest",
-  "Liverpool FC" = "Liverpool",
-  "Luton Town FC" = "Luton",
-  "Manchester City FC" = "Manchester City",
-  "Manchester United FC" = "Manchester United",
-  "Newcastle United FC" = "Newcastle",
-  "Norwich City FC" = "Norwich City",
-  "Sheffield United FC" = "Sheffield Utd",
-  "Southampton FC" = "Southampton",
-  "Tottenham Hotspur FC" = "Tottenham",
-  "Watford FC" = "Watford",
-  "West Bromwich Albion FC" = "West Bromwich Albion",
-  "West Ham United FC" = "West Ham",
-  "Wolverhampton Wanderers FC" = "Wolves",
-}
 
 export interface TeamStats {
   id: number;
