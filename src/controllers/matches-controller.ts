@@ -26,6 +26,8 @@ export async function fetchMatchData(
     const fetchedData = await matchesService.fetchAndSaveMatches();
     res.json({
       message: "Match data fetched and saved successfully",
+      status: 200,
+      success: true,
       matches: fetchedData.length,
       data: fetchedData,
     });

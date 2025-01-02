@@ -27,7 +27,8 @@ export async function fetchFixtureData(
     res.json({
       message: "Fixtures data fetched and saved successfully",
       data: fetchedData,
-      status: "success",
+      status: 200,
+      success: true,
       matches: fetchedData.length,
     });
   } catch (err) {
