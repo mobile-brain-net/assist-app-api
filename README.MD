@@ -1,5 +1,18 @@
 # server is hosted on ec2 on mobile-brain-aws account in london
 
+#### In order to deploy this on ec2 nned to :
+
+1. pull changes from main branch
+
+2. Build the project! W'ONT WORK IF YOU MISS THIS STEP :
+   ```bash
+   npm run build
+   ```
+3. restart PM2:
+   ```bash
+   pm2 restart 0
+   ```
+
 # API Endpoints
 
 ## Teams
