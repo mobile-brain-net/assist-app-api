@@ -1,6 +1,6 @@
 # server is hosted on ec2 on mobile-brain-aws account in london
 
-#### In order to deploy this on ec2 nned to :
+#### In order to deploy this on ec2 need to :
 
 ## project is on /home/ubunto/assist-app-api
 
