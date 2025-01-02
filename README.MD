@@ -2,8 +2,12 @@
 
 #### In order to deploy this on ec2 nned to :
 
-1. pull changes from main branch
+## project is on /home/ubunto/assist-app-api
 
+1. pull changes from main branch
+   ```bash
+   git pull
+   ```
 2. Build the project! W'ONT WORK IF YOU MISS THIS STEP :
    ```bash
    npm run build
