@@ -14,8 +14,12 @@ export class FixturesService {
     return this.dbService.getFixtures({});
   }
 
+  async getSeason(): Promise<number> {
+    return this.dbService.getCurrentSeason();
+  }
+
   async fetchAndSaveFixtures(): Promise<Fixture[]> {
-    const season = dayjs().year();
+    const season = await this.getSeason();
     const from = dayjs().subtract(30, "day").format("YYYY-MM-DD");
     const to = dayjs().add(30, "day").format("YYYY-MM-DD");
     const premierLeagueId = 39; // Premier League ID

@@ -1013,4 +1013,17 @@ LIMIT 5;`;
       return [];
     }
   }
+
+  async getCurrentSeason(): Promise<number> {
+    try {
+      const season = await Fixture.findOne({
+        attributes: ["league_season"],
+        order: [["created_at", "DESC"]],
+        limit: 1,
+      });
+      return season?.league_season ?? dayjs().year();
+    } catch (error) {
+      return dayjs().year();
+    }
+  }
 }

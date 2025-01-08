@@ -18,7 +18,7 @@ export enum NormalizedPlTeam {
   "Manchester United FC" = "Manchester United",
   "Newcastle United FC" = "Newcastle",
   "Norwich City FC" = "Norwich City",
-  "Nottingham Forest FC" = "Nottingham Forest",
+  "Nottingham Forest FC" = "Nottingham",
   "Sheffield United FC" = "Sheffield Utd",
   "Southampton FC" = "Southampton",
   "Tottenham Hotspur FC" = "Tottenham",
