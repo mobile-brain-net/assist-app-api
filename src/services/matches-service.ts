@@ -225,16 +225,15 @@ export class MatchesService {
     team: any,
     kitsHomeOrAway: "home" | "away"
   ): { name: string; icon: string; kits: string } {
+    let normalizedName =
+      NormalizedPlTeam[team.name as keyof typeof NormalizedPlTeam];
+    if (normalizedName === "Nottingham") {
+      normalizedName = "Nottingham Forest" as NormalizedPlTeam;
+    }
     return {
-      name:
-        NormalizedPlTeam[team.name as keyof typeof NormalizedPlTeam] ===
-        "Nottingham"
-          ? "Nottingham Forest"
-          : NormalizedPlTeam[team.name as keyof typeof NormalizedPlTeam],
+      name: normalizedName,
       icon: team.image,
-      kits: `/api/images/${kitsHomeOrAway}/${
-        NormalizedPlTeam[team.name as keyof typeof NormalizedPlTeam]
-      }.svg`,
+      kits: `/api/images/${kitsHomeOrAway}/${normalizedName}.svg`,
     };
   }
 
