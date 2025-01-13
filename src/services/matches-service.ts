@@ -362,9 +362,8 @@ export class MatchesService {
     }
   ) {
     const { overAllStats, processedStats, fixtures } = data;
-    const normalizedName =
+    let normalizedName =
       NormalizedPlTeam[team.name as keyof typeof NormalizedPlTeam];
-
     const teamStats = overAllStats.find((s: TeamStats) => s.id === team.id);
     const last5 = processedStats.last5.find((s: TeamStats) => s.id === team.id);
     const last5Home = processedStats.last5Home.find(
@@ -379,7 +378,8 @@ export class MatchesService {
     }
 
     return {
-      name: normalizedName,
+      name:
+        normalizedName === "Nottingham" ? "Nottingham Forest" : normalizedName,
       logo: normalizedName,
       home_kits: `/api/images/home/${normalizedName}.svg`,
       away_kits: `/api/images/away/${normalizedName}.svg`,
