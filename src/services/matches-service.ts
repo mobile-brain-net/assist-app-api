@@ -226,7 +226,11 @@ export class MatchesService {
     kitsHomeOrAway: "home" | "away"
   ): { name: string; icon: string; kits: string } {
     return {
-      name: NormalizedPlTeam[team.name as keyof typeof NormalizedPlTeam],
+      name:
+        NormalizedPlTeam[team.name as keyof typeof NormalizedPlTeam] ===
+        "Nottingham"
+          ? "Nottingham Forest"
+          : NormalizedPlTeam[team.name as keyof typeof NormalizedPlTeam],
       icon: team.image,
       kits: `/api/images/${kitsHomeOrAway}/${
         NormalizedPlTeam[team.name as keyof typeof NormalizedPlTeam]
