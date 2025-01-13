@@ -380,7 +380,8 @@ export class MatchesService {
     return {
       name:
         normalizedName === "Nottingham" ? "Nottingham Forest" : normalizedName,
-      logo: normalizedName,
+      logo:
+        normalizedName === "Nottingham" ? "Nottingham Forest" : normalizedName,
       home_kits: `/api/images/home/${normalizedName}.svg`,
       away_kits: `/api/images/away/${normalizedName}.svg`,
       overall: this.mapStatsSection(
